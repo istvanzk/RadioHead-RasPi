@@ -65,6 +65,12 @@
 #define RF_RST_PIN RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
 #define RF_LED_PIN NOT_A_PIN				 // No onboard led to drive
 
+#elif defined (BOARD_RFM22B)
+#define RF_CS_PIN  RPI_V2_GPIO_P1_24 // Slave Select on CE0 so P1 connector pin #24
+#define RF_IRQ_PIN RPI_V2_GPIO_P1_22 // IRQ on GPIO25 so P1 connector pin #22
+#define RF_LED_PIN NOT_A_PIN				 // No onboard led to drive
+#define RF_RST_PIN NOT_A_PIN				 // No onboard reset
+
 #else
 #error "RasPiBoards.h => Please define Hardware Board"
 #endif
