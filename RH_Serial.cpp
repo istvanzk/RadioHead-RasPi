@@ -1,15 +1,18 @@
 // RH_Serial.cpp
 //
 // Copyright (C) 2014 Mike McCauley
-// $Id: RH_Serial.cpp,v 1.13 2017/01/12 23:58:00 mikem Exp $
+// $Id: RH_Serial.cpp,v 1.16 2018/11/15 01:10:48 mikem Exp $
 
 #include <RH_Serial.h>
 #if (RH_PLATFORM == RH_PLATFORM_STM32F2)
+#elif defined (ARDUINO_ARCH_STM32F4)
+ #include <libmaple/HardwareSerial.h>
 #else
  #include <HardwareSerial.h>
 #endif
 #include <RHCRC.h>
 
+#ifdef RH_HAVE_SERIAL
 RH_Serial::RH_Serial(HardwareSerial& serial)
     :
     _serial(serial),
@@ -185,7 +188,6 @@ bool RH_Serial::recv(uint8_t* buf, uint8_t* len)
 {
     if (!available())
 	return false;
-
     if (buf && len)
     {
 	// Skip the 4 headers that are at the beginning of the rxBuf
@@ -200,6 +202,9 @@ bool RH_Serial::recv(uint8_t* buf, uint8_t* len)
 // Caution: this may block
 bool RH_Serial::send(const uint8_t* data, uint8_t len)
 {
+    if (len > RH_SERIAL_MAX_MESSAGE_LEN)
+	return false;
+
     if (!waitCAD()) 
 	return false;  // Check channel activity
 
@@ -238,3 +243,5 @@ uint8_t RH_Serial::maxMessageLength()
 {
     return RH_SERIAL_MAX_MESSAGE_LEN;
 }
+
+#endif // RH_PLATFORM_ATTINY

@@ -1,7 +1,7 @@
 // RH_RF69.cpp
 //
 // Copyright (C) 2011 Mike McCauley
-// $Id: RH_RF69.cpp,v 1.27 2017/01/12 23:58:00 mikem Exp $
+// $Id: RH_RF69.cpp,v 1.30 2017/11/06 00:04:08 mikem Exp $
 
 #include <RH_RF69.h>
 
@@ -47,10 +47,6 @@ PROGMEM static const RH_RF69::ModemConfig MODEM_CONFIG_TABLE[] =
     { CONFIG_FSK,  0x00, 0x80, 0x10, 0x00, 0xe0, 0xe0, CONFIG_WHITE}, // FSK_Rb250Fd250
     { CONFIG_FSK,  0x02, 0x40, 0x03, 0x33, 0x42, 0x42, CONFIG_WHITE}, // FSK_Rb55555Fd50 
 
-    // MOTEINO
-    // REGAFCBW set to default 0x8A, No DC-free encoding/decoding performed
-    { CONFIG_FSK,  0x02, 0x40, 0x03, 0x33, 0x42, 0x8A, CONFIG_NOWHITE}, // FSK_MOTEINO
-
     //  02,        03,   04,   05,   06,   19,   1a,  37
     // GFSK (BT=1.0), No Manchester, whitening, CRC, no address filtering
     // AFC BW == RX BW == 2 x bit rate
@@ -94,10 +90,10 @@ RH_RF69::RH_RF69(uint8_t slaveSelectPin, uint8_t interruptPin, RHGenericSPI& spi
     RHSPIDriver(slaveSelectPin, spi)
 {
     _idleMode = RH_RF69_OPMODE_MODE_STDBY;
-#ifndef RH_RF69_IRQLESS
+#ifndef RH_RF69_IRQLESS    
     _interruptPin = interruptPin;
     _myInterruptIndex = 0xff; // Not allocated yet
-#endif
+#endif    
 }
 
 void RH_RF69::setIdleMode(uint8_t idleMode)
@@ -109,8 +105,8 @@ bool RH_RF69::init()
 {
     if (!RHSPIDriver::init())
 	return false;
-
-#ifndef RH_RF69_IRQLESS
+	
+#ifndef RH_RF69_IRQLESS    
     // Determine the interrupt number that corresponds to the interruptPin
     int interruptNumber = digitalPinToInterrupt(_interruptPin);
     if (interruptNumber == NOT_AN_INTERRUPT)
@@ -118,7 +114,12 @@ bool RH_RF69::init()
 #ifdef RH_ATTACHINTERRUPT_TAKES_PIN_NUMBER
     interruptNumber = _interruptPin;
 #endif
-#endif // ndef RH_RF69_IRQLESS
+#endif
+
+#ifndef RH_RF69_IRQLESS
+    // Tell the low level SPI interface we will use SPI within this interrupt
+    spiUsingInterrupt(interruptNumber);
+#endif
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
@@ -159,7 +160,7 @@ bool RH_RF69::init()
     else
 	return false; // Too many devices, not enough interrupt vectors
 
-#endif // ndef RH_RF69_IRQLESS
+#endif
 
     setModeIdle();
 
@@ -234,7 +235,7 @@ void RH_RF69::handleInterrupt()
 //	Serial.println("PAYLOADREADY");
     }
 }
-#endif // ndef RH_RF69_IRQLESS
+#endif
 
 // Low level function reads the FIFO and checks the address
 // Caution: since we put our headers in what the RH_RF69 considers to be the payload, if encryption is enabled
@@ -244,6 +245,7 @@ void RH_RF69::readFifo()
 {
     ATOMIC_BLOCK_START;
     digitalWrite(_slaveSelectPin, LOW);
+    _spi.beginTransaction();
     _spi.transfer(RH_RF69_REG_00_FIFO); // Send the start address with the write mask off
     uint8_t payloadlen = _spi.transfer(0); // First byte is payload len (counting the headers)
     if (payloadlen <= RH_RF69_MAX_ENCRYPTABLE_PAYLOAD_LEN &&
@@ -267,6 +269,7 @@ void RH_RF69::readFifo()
 	}
     }
     digitalWrite(_slaveSelectPin, HIGH);
+    _spi.endTransaction();
     ATOMIC_BLOCK_END;
     // Any junk remaining in the FIFO will be cleared next time we go to receive mode.
 }
@@ -275,23 +278,22 @@ void RH_RF69::readFifo()
 // instance of RH_RF69.
 // 3 interrupts allows us to have 3 different devices
 #ifndef RH_RF69_IRQLESS
-void RH_RF69::isr0()
+void RH_INTERRUPT_ATTR RH_RF69::isr0()
 {
     if (_deviceForInterrupt[0])
 	_deviceForInterrupt[0]->handleInterrupt();
 }
-void RH_RF69::isr1()
+void RH_INTERRUPT_ATTR RH_RF69::isr1()
 {
     if (_deviceForInterrupt[1])
 	_deviceForInterrupt[1]->handleInterrupt();
 }
-void RH_RF69::isr2()
+void RH_INTERRUPT_ATTR RH_RF69::isr2()
 {
     if (_deviceForInterrupt[2])
 	_deviceForInterrupt[2]->handleInterrupt();
 }
-#endif // ndef RH_RF69_IRQLESS
-
+#endif
 
 int8_t RH_RF69::temperatureRead()
 {
@@ -312,6 +314,7 @@ bool RH_RF69::setFrequency(float centre, float afcPullInRange)
     spiWrite(RH_RF69_REG_09_FRFLSB, frf & 0xff);
 
     // afcPullInRange is not used
+    (void)afcPullInRange;
     return true;
 }
 
@@ -397,35 +400,48 @@ void RH_RF69::setModeTx()
     }
 }
 
-void RH_RF69::setTxPower(int8_t power)
+void RH_RF69::setTxPower(int8_t power, bool ishighpowermodule)
 {
-    _power = power;
-
-    uint8_t palevel;
-    if (_power < -18)
-	_power = -18;
-
-    // See http://www.hoperf.com/upload/rfchip/RF69-V1.2.pdf section 3.3.6
-    // for power formulas
+  _power = power;
+  uint8_t palevel;
+  
+  if (ishighpowermodule)
+  {
+    if (_power < -2)
+      _power = -2; //RFM69HW only works down to -2. 
     if (_power <= 13)
     {
-	// -18dBm to +13dBm
-	palevel = RH_RF69_PALEVEL_PA0ON | ((_power + 18) & RH_RF69_PALEVEL_OUTPUTPOWER);
+      // -2dBm to +13dBm
+      //Need PA1 exclusivelly on RFM69HW
+      palevel = RH_RF69_PALEVEL_PA1ON | ((_power + 18) & 
+      RH_RF69_PALEVEL_OUTPUTPOWER);
     }
     else if (_power >= 18)
     {
-	// +18dBm to +20dBm
-	// Need PA1+PA2
-	// Also need PA boost settings change when tx is turned on and off, see setModeTx()
-	palevel = RH_RF69_PALEVEL_PA1ON | RH_RF69_PALEVEL_PA2ON | ((_power + 11) & RH_RF69_PALEVEL_OUTPUTPOWER);
+      // +18dBm to +20dBm
+      // Need PA1+PA2
+      // Also need PA boost settings change when tx is turned on and off, see setModeTx()
+      palevel = RH_RF69_PALEVEL_PA1ON
+	| RH_RF69_PALEVEL_PA2ON
+	| ((_power + 11) & RH_RF69_PALEVEL_OUTPUTPOWER);
     }
     else
     {
-	// +14dBm to +17dBm
-	// Need PA1+PA2
-	palevel = RH_RF69_PALEVEL_PA1ON | RH_RF69_PALEVEL_PA2ON | ((_power + 14) & RH_RF69_PALEVEL_OUTPUTPOWER);
+      // +14dBm to +17dBm
+      // Need PA1+PA2
+      palevel = RH_RF69_PALEVEL_PA1ON
+	| RH_RF69_PALEVEL_PA2ON
+	| ((_power + 14) & RH_RF69_PALEVEL_OUTPUTPOWER);
     }
-    spiWrite(RH_RF69_REG_11_PALEVEL, palevel);
+  }
+  else
+  {
+    if (_power < -18) _power = -18;
+    if (_power > 13) _power = 13; //limit for RFM69W
+    palevel = RH_RF69_PALEVEL_PA0ON
+      | ((_power + 18) & RH_RF69_PALEVEL_OUTPUTPOWER);
+  }
+  spiWrite(RH_RF69_REG_11_PALEVEL, palevel);
 }
 
 // Sets registers from a canned modem configuration structure
@@ -448,17 +464,6 @@ bool RH_RF69::setModemConfig(ModemConfigChoice index)
     setModemRegisters(&cfg);
 
     return true;
-}
-
-// Return the canned FSK Modem configs
-bool RH_RF69::getModemConfig(ModemConfigChoice index, ModemConfig* config)
-{
-  if (index > (signed int)(sizeof(MODEM_CONFIG_TABLE) / sizeof(ModemConfig)))
-    return false;
-
-  memcpy_P(config, &MODEM_CONFIG_TABLE[index], sizeof(RH_RF69::ModemConfig));
-
-  return true;
 }
 
 void RH_RF69::setPreambleLength(uint16_t bytes)

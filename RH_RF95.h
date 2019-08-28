@@ -6,7 +6,7 @@
 //
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2014 Mike McCauley
-// $Id: RH_RF95.h,v 1.14 2017/01/13 01:29:36 mikem Exp mikem $
+// $Id: RH_RF95.h,v 1.22 2019/07/14 00:18:48 mikem Exp mikem $
 // 
 
 #ifndef RH_RF95_h
@@ -95,6 +95,16 @@
 #define RH_RF95_REG_24_HOP_PERIOD                          0x24
 #define RH_RF95_REG_25_FIFO_RX_BYTE_ADDR                   0x25
 #define RH_RF95_REG_26_MODEM_CONFIG3                       0x26
+
+#define RH_RF95_REG_27_PPM_CORRECTION                      0x27
+#define RH_RF95_REG_28_FEI_MSB                             0x28
+#define RH_RF95_REG_29_FEI_MID                             0x29
+#define RH_RF95_REG_2A_FEI_LSB                             0x2a
+#define RH_RF95_REG_2C_RSSI_WIDEBAND                       0x2c
+#define RH_RF95_REG_31_DETECT_OPTIMIZ                      0x31
+#define RH_RF95_REG_33_INVERT_IQ                           0x33
+#define RH_RF95_REG_37_DETECTION_THRESHOLD                 0x37
+#define RH_RF95_REG_39_SYNC_WORD                           0x39
 
 #define RH_RF95_REG_40_DIO_MAPPING1                        0x40
 #define RH_RF95_REG_41_DIO_MAPPING2                        0x41
@@ -232,6 +242,11 @@
 #define RH_RF95_PAYLOAD_CRC_ON                        0x04
 #define RH_RF95_SYM_TIMEOUT_MSB                       0x03
 
+// RH_RF95_REG_26_MODEM_CONFIG3
+#define RH_RF95_MOBILE_NODE                           0x08 // HopeRF term
+#define RH_RF95_LOW_DATA_RATE_OPTIMIZE                0x08 // Semtechs term
+#define RH_RF95_AGC_AUTO_ON                           0x04
+
 // RH_RF95_REG_4B_TCXO                                0x4b
 #define RH_RF95_TCXO_TCXO_INPUT_ON                    0x10
 
@@ -259,7 +274,12 @@
 /// - the excellent Rocket Scream Mini Ultra Pro with the RFM95W 
 ///   http://www.rocketscream.com/blog/product/mini-ultra-pro-with-radio/
 /// - Lora1276 module from NiceRF http://www.nicerf.com/product_view.aspx?id=99
-/// - Adafruit Feather M0 with RFM95 
+/// - Adafruit Feather M0 with RFM95
+/// - The very fine Talk2 Whisper Node LoRa boards https://wisen.com.au/store/products/whisper-node-lora
+///   an Arduino compatible board, which include an on-board RFM95/96 LoRa Radio (Semtech SX1276), external antenna, 
+///   run on 2xAAA batteries and support low power operations. RF95 examples work without modification.
+///   Use Arduino Board Manager to install the Talk2 code support. Upload the code with an FTDI adapter set to 5V.
+/// - heltec / TTGO ESP32 LoRa OLED https://www.aliexpress.com/item/Internet-Development-Board-SX1278-ESP32-WIFI-chip-0-96-inch-OLED-Bluetooth-WIFI-Lora-Kit-32/32824535649.html
 ///
 /// \par Overview
 ///
@@ -341,9 +361,9 @@
 /// this (tested).
 /// \code
 ///                 Teensy      inAir4 inAir9
-///                 GND----------GND   (ground in)
+///                 GND----------0V   (ground in)
 ///                 3V3----------3.3V  (3.3V in)
-/// interrupt 0 pin D2-----------D00   (interrupt request out)
+/// interrupt 0 pin D2-----------D0   (interrupt request out)
 ///          SS pin D10----------CS    (CS chip select in)
 ///         SCK pin D13----------CK    (SPI clock in)
 ///        MOSI pin D11----------SI    (SPI Data in)
@@ -414,6 +434,13 @@
 /// For Adafruit Feather M0 with RFM95, construct the driver like this:
 /// \code
 /// RH_RF95 rf95(8, 3);
+/// \endcode
+///
+/// If you have a talk2 Whisper Node LoRa board with on-board RF95 radio, 
+/// the example rf95_* sketches work without modification. Initialise the radio like
+/// with the default constructor:
+/// \code
+///  RH_RF95 driver;
 /// \endcode
 ///
 /// It is possible to have 2 or more radios connected to one Arduino, provided
@@ -624,16 +651,11 @@ public:
 
     /// Select one of the predefined modem configurations. If you need a modem configuration not provided 
     /// here, use setModemRegisters() with your own ModemConfig.
+    /// Caution: the slowest protocols may require a radio module with TCXO temperature controlled oscillator
+    /// for reliable operation.
     /// \param[in] index The configuration choice.
     /// \return true if index is a valid choice.
     bool        setModemConfig(ModemConfigChoice index);
-
-    /// Get the values of one of the predefined modem configurations.
-    /// 
-    /// \param[in] index The configuration choice.
-    /// \param[in] config A ModemConfig structure that will contains values of the modem configuration values.
-    /// \return true if index is a valid choice and config has been filled with values
-    bool        getModemConfig(ModemConfigChoice index, ModemConfig* config);
 
     /// Tests whether a new message is available
     /// from the Driver. 
@@ -744,13 +766,81 @@ public:
 
     /// Enable TCXO mode
     /// Call this immediately after init(), to force your radio to use an external 
-    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO).
+    /// frequency source, such as a Temperature Compensated Crystal Oscillator (TCXO), if available.
     /// See the comments in the main documentation about the sensitivity of this radio to
     /// clock frequency especially when using narrow bandwidths.
     /// Leaves the module in sleep mode.
     /// Caution, this function has not been tested by us.
+    /// Caution, the TCXO model radios are not low power when in sleep (consuming
+    /// about ~600 uA, reported by Phang Moh Lim.<br>
     void enableTCXO();
 
+    /// Returns the last measured frequency error.
+    /// The LoRa receiver estimates the frequency offset between the receiver centre frequency
+    /// and that of the received LoRa signal. This function returns the estimates offset (in Hz) 
+    /// of the last received message. Caution: this measurement is not absolute, but is measured 
+    /// relative to the local receiver's oscillator. 
+    /// Apparent errors may be due to the transmitter, the receiver or both.
+    /// \return The estimated centre frequency offset in Hz of the last received message. 
+    /// If the modem bandwidth selector in 
+    /// register RH_RF95_REG_1D_MODEM_CONFIG1 is invalid, returns 0.
+    int frequencyError();
+
+    /// Returns the Signal-to-noise ratio (SNR) of the last received message, as measured
+    /// by the receiver.
+    /// \return SNR of the last received message in dB
+    int lastSNR();
+
+    /// brian.n.norman@gmail.com 9th Nov 2018
+    /// Sets the radio spreading factor.
+    /// valid values are 6 through 12.
+    /// Out of range values below 6 are clamped to 6
+    /// Out of range values above 12 are clamped to 12
+    /// See Semtech DS SX1276/77/78/79 page 27 regarding SF6 configuration.
+    ///
+    /// \param[in] uint8_t sf (spreading factor 6..12)
+    /// \return nothing
+    void     setSpreadingFactor(uint8_t sf);
+ 	
+    /// brian.n.norman@gmail.com 9th Nov 2018
+    /// Sets the radio signal bandwidth
+    /// sbw ranges and resultant settings are as follows:-
+    /// sbw range    actual bw (kHz)
+    /// 0-7800       7.8
+    /// 7801-10400   10.4
+    /// 10401-15600  15.6
+    /// 15601-20800  20.8
+    /// 20801-31250  31.25
+    /// 31251-41700	 41.7
+    /// 41701-62500	 62.5
+    /// 62501-12500  12.5
+    /// 12501-250000 250.0
+    /// >250000      500.0
+    /// NOTE caution Earlier - Semtech do not recommend BW below 62.5 although, in testing
+    /// I managed 31.25 with two devices in close proximity.
+    /// \param[in] sbw long, signal bandwidth e.g. 125000
+    void     setSignalBandwidth(long sbw);
+ 	
+    /// brian.n.norman@gmail.com 9th Nov 2018
+    /// Sets the coding rate to 4/5, 4/6, 4/7 or 4/8.
+    /// Valid denominator values are 5, 6, 7 or 8. A value of 5 sets the coding rate to 4/5 etc.
+    /// Values below 5 are clamped at 5
+    /// values above 8 are clamped at 8
+    /// \param[in] denominator uint8_t range 5..8
+    void     setCodingRate4(uint8_t denominator);
+ 	
+    /// brian.n.norman@gmail.com 9th Nov 2018
+    /// sets the low data rate flag if symbol time exceeds 16ms
+    /// ref: https://www.thethingsnetwork.org/forum/t/a-point-to-note-lora-low-data-rate-optimisation-flag/12007
+    /// called by setBandwidth() and setSpreadingfactor() since these affect the symbol time.
+    void 	 setLowDatarate();
+ 	
+    /// brian.n.norman@gmail.com 9th Nov 2018
+    /// allows the payload CRC bit to be turned on/off. Normally this should be left on
+    /// so that packets with a bad CRC are rejected
+    /// \patam[in] on bool, true turns the payload CRC on, false turns it off
+    void setPayloadCRC(bool on);
+ 	
 protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF95.
     /// Called automatically by isr*()
@@ -800,10 +890,18 @@ private:
 
     /// True when there is a valid message in the buffer
     volatile bool       _rxBufValid;
+
+    // True if we are using the HF port (779.0 MHz and above)
+    bool                _usingHFport;
+
+    // Last measured SNR, dB
+    int8_t              _lastSNR;
 };
 
 /// @example rf95_client.pde
 /// @example rf95_server.pde
+/// @example rf95_encrypted_client.pde
+/// @example rf95_encrypted_server.pde
 /// @example rf95_reliable_datagram_client.pde
 /// @example rf95_reliable_datagram_server.pde
 

@@ -9,7 +9,7 @@
 //
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011 Mike McCauley
-// $Id: RHMesh.cpp,v 1.9 2015/08/13 02:45:47 mikem Exp $
+// $Id: RHMesh.cpp,v 1.10 2018/09/23 23:54:01 mikem Exp $
 
 #include <RHMesh.h>
 
@@ -107,8 +107,8 @@ void RHMesh::peekAtMessage(RoutedMessage* message, uint8_t messageLen)
 	    if (d->route[i] == _thisAddress)
 		break;
 	i++;
-	while (i++ < numRoutes)
-	    addRouteTo(d->route[i], headerFrom());
+	while (i < numRoutes)
+	    addRouteTo(d->route[i++], headerFrom());
     }
     else if (   messageLen > 1 
 	     && m->msgType == RH_MESH_MESSAGE_TYPE_ROUTE_FAILURE)

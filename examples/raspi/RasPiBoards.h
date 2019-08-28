@@ -5,7 +5,7 @@
 // or do not define it, both works
 // ie : #define RF_LED_PIN NOT_A_PIN
 
-// LoRasPi board 
+// LoRasPi board
 //==============
 // see https://github.com/hallard/LoRasPI
 #if defined (BOARD_LORASPI)
@@ -24,7 +24,7 @@
 #define RF_IRQ_PIN RPI_V2_GPIO_P1_35 // IRQ on GPIO19 so P1 connector pin #35
 
 
-// Raspberri PI Lora Gateway for multiple modules 
+// Raspberri PI Lora Gateway for multiple modules
 // ==============================================
 // see https://github.com/hallard/RPI-Lora-Gateway
 #elif defined (BOARD_PI_LORA_GATEWAY)
@@ -56,20 +56,23 @@
 #define RF_IRQ_PIN MOD1_IRQ_PIN
 #define RF_RST_PIN MOD1_RST_PIN
 
-// Dragino Raspberry PI hat (no obboard led)
+// Dragino Raspberry PI hat (no onboard led)
 // =========================================
 // see https://github.com/dragino/Lora
 #elif defined (BOARD_DRAGINO_PIHAT)
 #define RF_CS_PIN  RPI_V2_GPIO_P1_22 // Slave Select on GPIO25 so P1 connector pin #22
 #define RF_IRQ_PIN RPI_V2_GPIO_P1_07 // IRQ on GPIO4 so P1 connector pin #7
 #define RF_RST_PIN RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
-#define RF_LED_PIN NOT_A_PIN				 // No onboard led to drive
+#define RF_LED_PIN NOT_A_PIN		 // No onboard led to drive
 
+// HopeRF RF22 based radio modules (no onboard led - reset pin not used)
+// =========================================
+// see http://www.sparkfun.com/products/10153
 #elif defined (BOARD_RFM22B)
 #define RF_CS_PIN  RPI_V2_GPIO_P1_24 // Slave Select on CE0 so P1 connector pin #24
 #define RF_IRQ_PIN RPI_V2_GPIO_P1_22 // IRQ on GPIO25 so P1 connector pin #22
-#define RF_LED_PIN NOT_A_PIN				 // No onboard led to drive
-#define RF_RST_PIN NOT_A_PIN				 // No onboard reset
+#define RF_LED_PIN NOT_A_PIN	     // No onboard led to drive
+#define RF_RST_PIN NOT_A_PIN		 // No onboard reset
 
 #else
 #error "RasPiBoards.h => Please define Hardware Board"

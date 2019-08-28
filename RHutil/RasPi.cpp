@@ -31,11 +31,11 @@ void SPIClass::begin(uint16_t divider, uint8_t bitOrder, uint8_t dataMode)
   setClockDivider(divider);
   setBitOrder(bitOrder);
   setDataMode(dataMode);
-	bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE); // RH Library code control CS line
+
+  //Set CS pins polarity to low
+  bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, 0);
 
   bcm2835_spi_begin();
-
-  //bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE); // RH Library code control CS line
 
   //Initialize a timestamp for millis calculation
   gettimeofday(&RHStartTime, NULL);
@@ -68,13 +68,10 @@ void SPIClass::setClockDivider(uint16_t rate)
 byte SPIClass::transfer(byte _data)
 {
   //Set which CS pin to use for next transfers
-  bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
+  bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
   //Transfer 1 byte
-  
-  //printf("SPIClass::transfer(%02X)", _data);
   byte data;
   data = bcm2835_spi_transfer((uint8_t)_data);
-  //printf("=%02X\n", data);
   return data;
 }
 

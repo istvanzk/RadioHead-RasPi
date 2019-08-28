@@ -32,7 +32,7 @@ class RHGenericSPI;
 
 /////////////////////////////////////////////////////////////////////
 /// \class RHSPIDriver RHSPIDriver.h <RHSPIDriver.h>
-/// \brief Base class for a RadioHead drivers that use the SPI bus
+/// \brief Base class for RadioHead drivers that use the SPI bus
 /// to communicate with its transport hardware.
 ///
 /// This class can be subclassed by Drivers that require to use the SPI bus.
@@ -99,12 +99,19 @@ public:
     /// \param[in] slaveSelectPin The pin to use
     void setSlaveSelectPin(uint8_t slaveSelectPin);
 
-protected:
-    /// Reference to the RHGenericSPI instance to use to transfer data with teh SPI device
+    /// Set the SPI interrupt number
+    /// If SPI transactions can occur within an interrupt, tell the low level SPI
+    /// interface which interrupt is used
+    /// \param[in] interruptNumber the interrupt number
+    void spiUsingInterrupt(uint8_t interruptNumber);
+
+    protected:
+    /// Reference to the RHGenericSPI instance to use to transfer data with the SPI device
     RHGenericSPI&       _spi;
 
     /// The pin number of the Slave Select pin that is used to select the desired device.
     uint8_t             _slaveSelectPin;
+    uint8_t             _interuptPin; // If interrupts are used else NOT_AN_INTERRUPT
 };
 
 #endif
