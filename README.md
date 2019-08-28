@@ -9,7 +9,7 @@ This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry P
 **This fork has been updated based on the orginal RadioHead Packet Radio library [version 1.92][4]**
 
 
-### Features added with this fork - Version F1.92, August 2019
+### Features added with this fork - Version 1.92, August 2019
 =================================================
 
 **Compatible with boards**
@@ -17,10 +17,6 @@ This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry P
 - Compatibility with RF22B based radio modules on Raspberry PI - NEW.
 - Added sample code for Raspberry Pi for HopeRF RF22 based radio modules, e.g. [RFM22B][26], in new [RadioHead/examples/raspi/rf22b][27].
 Based on sample code for RFM69HCW with Raspberry Pi by [Charles-Henri Hallard][1] and sample code for RF24 with Arduino by [Mike McCauley][3].
--- rf22b_client
--- rf22b_server
--- rf22b_reliable_datagram_client
--- rf22b_reliable_datagram_server
 
 - Kept compatibility with RF69 and RF95 based radio modules on Raspberry PI - See [Charles-Henri Hallard][1] and below.
 
