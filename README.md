@@ -1,7 +1,7 @@
-RadioHead Packet Radio library for embedded microprocessors
+RadioHead Packet Radio library for embedded microprocessors - Fork
 ===========================================================
 
-###Version F1.92
+### Features added with this fork - Version 1.92, August 2019
 
 This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry PI support of the original RadioHead Packet Radio library for embedded microprocessors by [Mike McCauley][3]. It provides a complete object-oriented library for sending and receiving packetized messages via a variety of common data radios and other transports on a range of embedded microprocessors.
 
@@ -9,7 +9,6 @@ This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry P
 **This fork has been updated based on the orginal RadioHead Packet Radio library [version 1.92][4]**
 
 
-### Features added with this fork - Version 1.92, August 2019
 =================================================
 
 **Compatible with boards**
