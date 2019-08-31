@@ -58,14 +58,6 @@ void sig_handler(int sig)
   force_exit=true;
 }
 
-void printbuffer(uint8_t buff[], int len)
-{
-  for (int i = 0; i< len; i++)
-  {
-    printf(" %2X", buff[i]);
-  }
-}
-
 //Main Function
 int main (int argc, const char* argv[] )
 {
