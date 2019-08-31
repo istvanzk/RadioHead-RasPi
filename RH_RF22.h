@@ -2,13 +2,25 @@
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011 Mike McCauley
 // $Id: RH_RF22.h,v 1.35 2018/09/23 23:54:01 mikem Exp $
-//
+// Updated for Raspberry PI by istanzk, based on RH_RF95.h/RH_RF69.h modifications by hallard, 2019/08/31
 
 #ifndef RH_RF22_h
 #define RH_RF22_h
 
 #include <RHGenericSPI.h>
 #include <RHSPIDriver.h>
+
+// If you don't want to use interupts (mainly to win one I/O pin) then
+// you just need to uncomment this line, if you're on Raspberry PI
+// it will be set automaticly below
+//#define RH_RF22_IRQLESS
+
+#if (RH_PLATFORM == RH_PLATFORM_RASPI)
+// No IRQ used on Raspberry PI
+#ifndef RH_RF22_IRQLESS
+#define RH_RF22_IRQLESS
+#endif
+#endif // RH_PLATFORM_RASPI PI
 
 // This is the maximum number of interrupts the library can support
 // Most Arduinos can handle 2, Megas can handle more
@@ -18,7 +30,7 @@
 #define RH_RF22_SPI_WRITE_MASK 0x80
 
 // This is the maximum message length that can be supported by this library. Limited by
-// the single message length octet in the header. 
+// the single message length octet in the header.
 // Yes, 255 is correct even though the FIFO size in the RF22 is only
 // 64 octets. We use interrupts to refill the Tx FIFO during transmission and to empty the
 // Rx FIFO during reception
@@ -345,9 +357,9 @@
 #define RH_RF22_TXPOW_5DBM                         0x02
 #define RH_RF22_TXPOW_8DBM                         0x03
 #define RH_RF22_TXPOW_11DBM                        0x04
-#define RH_RF22_TXPOW_14DBM                        0x05 
-#define RH_RF22_TXPOW_17DBM                        0x06 
-#define RH_RF22_TXPOW_20DBM                        0x07 
+#define RH_RF22_TXPOW_14DBM                        0x05
+#define RH_RF22_TXPOW_17DBM                        0x06
+#define RH_RF22_TXPOW_20DBM                        0x07
 // RFM23B only:
 #define RH_RF22_RF23B_TXPOW_M8DBM                  0x00 // -8dBm
 #define RH_RF22_RF23B_TXPOW_M5DBM                  0x01 // -5dBm
@@ -397,60 +409,60 @@
 /// Works with RF22, RF23 based radio modules, and compatible chips and modules, including:
 /// - RF22 bare module: http://www.sparkfun.com/products/10153
 ///   (Caution, that is a 3.3V part, and requires a 3.3V CPU such as Teensy etc or level shifters)
-/// - RF22 shield: http://www.sparkfun.com/products/11018 
+/// - RF22 shield: http://www.sparkfun.com/products/11018
 /// - RF22 integrated board http://www.anarduino.com/miniwireless
-/// - RFM23BP bare module: http://www.anarduino.com/details.jsp?pid=130 
+/// - RFM23BP bare module: http://www.anarduino.com/details.jsp?pid=130
 /// - Silicon Labs Si4430/31/32 based modules. S4432 is equivalent to RF22. Si4431/30 is equivalent to RF23.
 ///
 /// Data based on https://www.sparkfun.com/datasheets/Wireless/General/RFM22B.pdf
 ///
 /// \par Overview
 ///
-/// This base class provides basic functions for sending and receiving unaddressed, 
+/// This base class provides basic functions for sending and receiving unaddressed,
 /// unreliable datagrams of arbitrary length to 255 octets per packet.
 ///
-/// Manager classes may use this class to implement reliable, addressed datagrams and streams, 
+/// Manager classes may use this class to implement reliable, addressed datagrams and streams,
 /// mesh routers, repeaters, translators etc.
 ///
-/// On transmission, the TO and FROM addresses default to 0x00, unless changed by a subclass. 
+/// On transmission, the TO and FROM addresses default to 0x00, unless changed by a subclass.
 /// On reception the TO addressed is checked against the node address (defaults to 0x00) or the
 /// broadcast address (which is 0xff). The ID and FLAGS are set to 0, and not checked by this class.
-/// This permits use of the this base RH_RF22 class as an 
+/// This permits use of the this base RH_RF22 class as an
 /// unaddressed, unreliable datagram service without the use of one the RadioHead Manager classes.
 ///
-/// Naturally, for any 2 radios to communicate that must be configured to use the same frequency and 
+/// Naturally, for any 2 radios to communicate that must be configured to use the same frequency and
 /// modulation scheme.
 ///
 /// \par Details
 ///
 /// This Driver provides an object-oriented interface for sending and receiving data messages with Hope-RF
-/// RF22 and RF23 based radio modules, and compatible chips and modules, 
-/// including the RFM22B transceiver module such as 
+/// RF22 and RF23 based radio modules, and compatible chips and modules,
+/// including the RFM22B transceiver module such as
 /// this bare module: http://www.sparkfun.com/products/10153
 /// and this shield: http://www.sparkfun.com/products/11018
 /// and this module: http://www.hoperfusa.com/details.jsp?pid=131
 /// and this integrated board: http://www.anarduino.com/miniwireless
 /// and RF23BP modules such as this http://www.anarduino.com/details.jsp?pid=130
 ///
-/// The Hope-RF (http://www.hoperf.com) RFM22B (http://www.hoperf.com/rf_fsk/fsk/RFM22B.htm) 
-/// is a low-cost ISM transceiver module. It supports FSK, GFSK, OOK over a wide 
+/// The Hope-RF (http://www.hoperf.com) RFM22B (http://www.hoperf.com/rf_fsk/fsk/RFM22B.htm)
+/// is a low-cost ISM transceiver module. It supports FSK, GFSK, OOK over a wide
 /// range of frequencies and programmable data rates.
 /// Manual can be found at https://www.sparkfun.com/datasheets/Wireless/General/RFM22.PDF
 ///
-/// This library provides functions for sending and receiving messages of up to 255 octets on any 
-/// frequency supported by the RF22B, in a range of predefined data rates and frequency deviations. 
+/// This library provides functions for sending and receiving messages of up to 255 octets on any
+/// frequency supported by the RF22B, in a range of predefined data rates and frequency deviations.
 /// Frequency can be set with 312Hz precision to any frequency from 240.0MHz to 960.0MHz.
 ///
 /// Up to 3 RF22B modules can be connected to an Arduino, permitting the construction of translators
 /// and frequency changers, etc.
 ///
-/// The following modulation types are suppported with a range of modem configurations for 
+/// The following modulation types are suppported with a range of modem configurations for
 /// common data rates and frequency deviations:
 /// - GFSK Gaussian Frequency Shift Keying
 /// - FSK Frequency Shift Keying
 /// - OOK On-Off Keying
 ///
-/// Support for other RF22B features such as on-chip temperature measurement, analog-digital 
+/// Support for other RF22B features such as on-chip temperature measurement, analog-digital
 /// converter, transmitter power control etc is also provided.
 ///
 /// Tested on Arduino Diecimila, Uno and Mega with arduino-0021, 1.0.5
@@ -473,14 +485,14 @@
 /// - 0 to 255 octets DATA
 /// - 2 octets CRC computed with CRC16(IBM), computed on HEADER, LENGTH and DATA
 ///
-/// For technical reasons, the message format is not protocol compatible with the 
-/// 'HopeRF Radio Transceiver Message Library for Arduino' http://www.airspayce.com/mikem/arduino/HopeRF from the same author. Nor is it compatible with 
+/// For technical reasons, the message format is not protocol compatible with the
+/// 'HopeRF Radio Transceiver Message Library for Arduino' http://www.airspayce.com/mikem/arduino/HopeRF from the same author. Nor is it compatible with
 /// 'Virtual Wire' http://www.airspayce.com/mikem/arduino/VirtualWire.pdf also from the same author.
 ///
 /// \par Connecting RFM-22 to Arduino
 ///
 /// If you have the Sparkfun RFM22 Shield (https://www.sparkfun.com/products/11018)
-/// the connections described below are done for you on the shield, no changes required, 
+/// the connections described below are done for you on the shield, no changes required,
 /// just add headers and plug it in to an Arduino (but not and Arduino Mega, see below)
 ///
 /// The physical connection between the RF22B and the Arduino requires 3.3V,
@@ -491,13 +503,13 @@
 /// Note also that on the RFM22B (but not the RFM23B), it is required to control the TX_ANT and
 /// RX_ANT pins of the RFM22 in order to control the antenna connection properly. The RH_RF22
 /// driver is configured by default so that GPIO0 and GPIO1 outputs can
-/// control TX_ANT and RX_ANT input pins respectively automatically. On RFM22, 
+/// control TX_ANT and RX_ANT input pins respectively automatically. On RFM22,
 /// you must connect GPIO0
 /// to TX_ANT and GPIO1 to RX_ANT for this automatic antenna switching to
 /// occur.  See setGpioReversed() for more details. These connections are not required on RFM23B.
 ///
 /// If you are using the Sparkfun RF22 shield, it will work with any 5V arduino without modification.
-/// Connect the RFM-22 module to most Arduino's like this (Caution, Arduino Mega has different pins for SPI, 
+/// Connect the RFM-22 module to most Arduino's like this (Caution, Arduino Mega has different pins for SPI,
 /// see below).
 /// \code
 ///                 Arduino      RFM-22B
@@ -581,7 +593,7 @@
 /// \endcode
 /// and use the default constructor:
 /// RH_RF22 driver;
-/// For connecting an Arduino to an RFM23BP module. Note that the antenna control pins are reversed 
+/// For connecting an Arduino to an RFM23BP module. Note that the antenna control pins are reversed
 /// compared to the RF22.
 /// \code
 ///                 Arduino      RFM-23BP
@@ -599,11 +611,11 @@
 ///                           \--TXON   (TX antenna control in)
 /// \endcode
 ///
-/// and you can then use the default constructor RH_RF22(). 
-/// You can override the default settings for the SS pin and the interrupt 
-/// in the RH_RF22 constructor if you wish to connect the slave select SS to other than the normal one for your 
+/// and you can then use the default constructor RH_RF22().
+/// You can override the default settings for the SS pin and the interrupt
+/// in the RH_RF22 constructor if you wish to connect the slave select SS to other than the normal one for your
 /// Arduino (D10 for Diecimila, Uno etc and D53 for Mega)
-/// or the interrupt request to other than pin D2 (Caution, different processors have different constraints as to the 
+/// or the interrupt request to other than pin D2 (Caution, different processors have different constraints as to the
 /// pins available for interrupts).
 ///
 /// Caution: some people have had problems with some batches of
@@ -613,7 +625,7 @@
 /// either the cause or the supposed cure.
 //
 ///
-/// If you have an Arduino Zero, you should note that you cannot use Pin 2 for the interrupt line 
+/// If you have an Arduino Zero, you should note that you cannot use Pin 2 for the interrupt line
 /// (Pin 2 is for the NMI only), instead you can use any other pin (we use Pin 3) and initialise RH_RF69 like this:
 /// \code
 /// // Slave Select is pin 10, interrupt is Pin 3
@@ -665,14 +677,14 @@
 /// \endcode
 /// You can of use other pins for NSEL and NIRQ if you prefer.
 ///
-/// Note: It is possible to have 2 radios connected to one Arduino, provided each radio has its own 
+/// Note: It is possible to have 2 radios connected to one Arduino, provided each radio has its own
 /// SS and interrupt line (SCK, SDI and SDO are common to both radios)
 ///
-/// Caution: on some Arduinos such as the Mega 2560, if you set the slave select pin to be other than the usual SS 
-/// pin (D53 on  Mega 2560), you may need to set the usual SS pin to be an output to force the Arduino into SPI 
+/// Caution: on some Arduinos such as the Mega 2560, if you set the slave select pin to be other than the usual SS
+/// pin (D53 on  Mega 2560), you may need to set the usual SS pin to be an output to force the Arduino into SPI
 /// master mode.
 ///
-/// Caution: Power supply requirements of the RF22 module may be relevant in some circumstances: 
+/// Caution: Power supply requirements of the RF22 module may be relevant in some circumstances:
 /// RF22 modules are capable of pulling 80mA+ at full power, where Arduino's 3.3V line can
 /// give 50mA. You may need to make provision for alternate power supply for
 /// the RF22, especially if you wish to use full transmit power, and/or you have
@@ -682,19 +694,19 @@
 /// -"fake ok" state, where initialization passes fluently, but communication doesn't happen
 /// -shields hang Arduino boards, especially during the flashing
 ///
-/// Caution: some RF22 breakout boards (such as the HAB-RFM22B-BOA  HAB-RFM22B-BO) reportedly 
+/// Caution: some RF22 breakout boards (such as the HAB-RFM22B-BOA  HAB-RFM22B-BO) reportedly
 /// have the TX_ANT and RX_ANT pre-connected to GPIO0 and GPIO1 round the wrong way. You can work with this
 /// if you use setGpioReversed().
 ///
 /// Caution: If you are using a bare RF22 module without IO level shifters, you may have difficulty connecting
 /// to a 5V arduino. The RF22 module is 3.3V and its IO pins are 3.3V not 5V. Some Arduinos (Diecimila and
 /// Uno) seem to work OK with this, and some (Mega) do not always work reliably. Your Mileage May Vary.
-/// For best result, use level shifters, or use a RF22 shield or board with level shifters built in, 
-/// such as the Sparkfun RFM22 shield http://www.sparkfun.com/products/11018. 
-/// You could also use a 3.3V IO Arduino such as a Pro. 
-/// It is recognised that it is difficult to connect 
-/// the Sparkfun RFM22 shield to a Mega, since the SPI pins on the Mega are different to other Arduinos, 
-/// But it is possible, by bending the SPI pins (D10, D11, D12, D13) on the 
+/// For best result, use level shifters, or use a RF22 shield or board with level shifters built in,
+/// such as the Sparkfun RFM22 shield http://www.sparkfun.com/products/11018.
+/// You could also use a 3.3V IO Arduino such as a Pro.
+/// It is recognised that it is difficult to connect
+/// the Sparkfun RFM22 shield to a Mega, since the SPI pins on the Mega are different to other Arduinos,
+/// But it is possible, by bending the SPI pins (D10, D11, D12, D13) on the
 /// shield out of the way before plugging it in to the Mega and jumpering the shield pins to the Mega like this:
 /// \code
 ///   RF22 Shield        Mega
@@ -703,16 +715,19 @@
 ///     D11              D51
 ///     D12              D50
 /// \endcode
-/// 
+///
 /// \par Interrupts
 ///
-/// The Driver uses interrupts to react to events in the RF22 module, 
-/// such as the reception of a new packet, or the completion of transmission of a packet. 
+/// The Driver uses interrupts to react to events in the RF22 module,
+/// such as the reception of a new packet, or the completion of transmission of a packet.
 /// The RH_RF22 interrupt service routine reads status from and writes data
 /// to the the RF22 module via the SPI interface. It is very important therefore,
 /// that if you are using the RF22 library with another SPI based deviced, that you
 /// disable interrupts while you transfer data to and from that other device.
 /// Use cli() to disable interrupts and sei() to reenable them.
+///
+/// NOTE: Interrupt handling on Raspberry PI is available via the BCM2835 and the RadioHead interrupt handler cannot be used!
+/// The RH_RF22_IRQLESS is used to disable the RadioHead interrupts handling.
 ///
 /// \par SPI Interface
 ///
@@ -732,7 +747,7 @@
 /// The advantages of the Software SPI interface are that it can be used on
 /// any Arduino pins, not just the usual dedicated hardware pins. The
 /// disadvantage is that it is significantly slower then hardware.
-/// If you observe reliable behaviour with the default hardware SPI RHHardwareSPI, but unreliable behaviour 
+/// If you observe reliable behaviour with the default hardware SPI RHHardwareSPI, but unreliable behaviour
 /// with Software SPI RHSoftwareSPI, it may be due to slow CPU performance.
 ///
 /// Initialisation example with hardware SPI
@@ -753,32 +768,32 @@
 ///
 /// \par Memory
 ///
-/// The RH_RF22 Driver requires non-trivial amounts of memory. The sample programs all compile to 
-/// about 9 to 14kbytes each on Arduino, which will fit in the flash proram memory of most Arduinos. However, 
-/// the RAM requirements are more critical. Most sample programs above will run on Duemilanova, 
-/// but not on Diecimila. Even on Duemilanova, the RAM requirements are very close to the 
-/// available memory of 2kbytes. Therefore, you should be vary sparing with RAM use in programs that use 
+/// The RH_RF22 Driver requires non-trivial amounts of memory. The sample programs all compile to
+/// about 9 to 14kbytes each on Arduino, which will fit in the flash proram memory of most Arduinos. However,
+/// the RAM requirements are more critical. Most sample programs above will run on Duemilanova,
+/// but not on Diecimila. Even on Duemilanova, the RAM requirements are very close to the
+/// available memory of 2kbytes. Therefore, you should be vary sparing with RAM use in programs that use
 /// the RH_RF22 Driver on Duemilanova.
 ///
-/// The sample RHRouter and RHMesh programs compile to about 14kbytes, 
-/// and require more RAM than the others. 
+/// The sample RHRouter and RHMesh programs compile to about 14kbytes,
+/// and require more RAM than the others.
 /// They will not run on Duemilanova or Diecimila, but will run on Arduino Mega.
 ///
-/// It is often hard to accurately identify when you are hitting RAM limits on Arduino. 
+/// It is often hard to accurately identify when you are hitting RAM limits on Arduino.
 /// The symptoms can include:
 /// - Mysterious crashes and restarts
 /// - Changes in behaviour when seemingly unrelated changes are made (such as adding print() statements)
 /// - Hanging
 /// - Output from Serial.print() not appearing
-/// 
-/// With an Arduino Mega, with 8 kbytes of SRAM, there is much more RAM headroom for 
-/// your own elaborate programs. 
+///
+/// With an Arduino Mega, with 8 kbytes of SRAM, there is much more RAM headroom for
+/// your own elaborate programs.
 /// This library is reported to work with Arduino Pro Mini, but that has not been tested by me.
 ///
-/// The RF22M modules use an inexpensive crystal to control the frequency synthesizer, and therfore you can expect 
+/// The RF22M modules use an inexpensive crystal to control the frequency synthesizer, and therfore you can expect
 /// the transmitter and receiver frequencies to be subject to the usual inaccuracies of such crystals. The RF22
-/// contains an AFC circuit to compensate for differences in transmitter and receiver frequencies. 
-/// It does this by altering the receiver frequency during reception by up to the pull-in frequency range. 
+/// contains an AFC circuit to compensate for differences in transmitter and receiver frequencies.
+/// It does this by altering the receiver frequency during reception by up to the pull-in frequency range.
 /// This RF22 library enables the AFC and by default sets the pull-in frequency range to
 /// 0.05MHz, which should be sufficient to handle most situations. However, if you observe unexplained packet losses
 /// or failure to operate correctly all the time it may be because your modules have a wider frequency difference, and
@@ -788,7 +803,7 @@
 ///
 /// You can control the transmitter power on the RF22 and RF23 transceivers
 /// with the RH_RF22::setTxPower() function. The argument can be any of the
-/// RH_RF22_TXPOW_* (for RFM22) or RH_RF22_RF23B_TXPOW_* (for RFM23) values. 
+/// RH_RF22_TXPOW_* (for RFM22) or RH_RF22_RF23B_TXPOW_* (for RFM23) values.
 /// The default is RH_RF22_TXPOW_8DBM/RH_RF22_RF23B_TXPOW_1DBM . Eg:
 /// \code
 /// driver.setTxPower(RH_RF22_TXPOW_2DBM);
@@ -861,15 +876,15 @@
 ///
 /// Some simple speed performance tests have been conducted.
 /// In general packet transmission rate will be limited by the modulation scheme.
-/// Also, if your code does any slow operations like Serial printing it will also limit performance. 
+/// Also, if your code does any slow operations like Serial printing it will also limit performance.
 /// We disabled any printing in the tests below.
 /// We tested with RH_RF22::GFSK_Rb125Fd125, which is probably the fastest scheme available.
 /// We tested with a 13 octet message length, over a very short distance of 10cm.
 ///
-/// Transmission (no reply) tests with modulation RH_RF22::GFSK_Rb125Fd125 and a 
+/// Transmission (no reply) tests with modulation RH_RF22::GFSK_Rb125Fd125 and a
 /// 13 octet message show about 330 messages per second transmitted.
 ///
-/// Transmit-and-wait-for-a-reply tests with modulation RH_RF22::GFSK_Rb125Fd125 and a 
+/// Transmit-and-wait-for-a-reply tests with modulation RH_RF22::GFSK_Rb125Fd125 and a
 /// 13 octet message (send and receive) show about 160 round trips per second.
 ///
 /// \par Compatibility with RF22 library
@@ -915,23 +930,23 @@ public:
 	uint8_t    reg_1c;   ///< Value for register RH_RF22_REG_1C_IF_FILTER_BANDWIDTH
 	uint8_t    reg_1f;   ///< Value for register RH_RF22_REG_1F_CLOCK_RECOVERY_GEARSHIFT_OVERRIDE
 	uint8_t    reg_20;   ///< Value for register RH_RF22_REG_20_CLOCK_RECOVERY_OVERSAMPLING_RATE
-	uint8_t    reg_21;   ///< Value for register RH_RF22_REG_21_CLOCK_RECOVERY_OFFSET2 
-	uint8_t    reg_22;   ///< Value for register RH_RF22_REG_22_CLOCK_RECOVERY_OFFSET1 
+	uint8_t    reg_21;   ///< Value for register RH_RF22_REG_21_CLOCK_RECOVERY_OFFSET2
+	uint8_t    reg_22;   ///< Value for register RH_RF22_REG_22_CLOCK_RECOVERY_OFFSET1
 	uint8_t    reg_23;   ///< Value for register RH_RF22_REG_23_CLOCK_RECOVERY_OFFSET0
 	uint8_t    reg_24;   ///< Value for register RH_RF22_REG_24_CLOCK_RECOVERY_TIMING_LOOP_GAIN1
-	uint8_t    reg_25;   ///< Value for register RH_RF22_REG_25_CLOCK_RECOVERY_TIMING_LOOP_GAIN0 
-	uint8_t    reg_2c;   ///< Value for register RH_RF22_REG_2C_OOK_COUNTER_VALUE_1 
+	uint8_t    reg_25;   ///< Value for register RH_RF22_REG_25_CLOCK_RECOVERY_TIMING_LOOP_GAIN0
+	uint8_t    reg_2c;   ///< Value for register RH_RF22_REG_2C_OOK_COUNTER_VALUE_1
 	uint8_t    reg_2d;   ///< Value for register RH_RF22_REG_2D_OOK_COUNTER_VALUE_2
-	uint8_t    reg_2e;   ///< Value for register RH_RF22_REG_2E_SLICER_PEAK_HOLD 
+	uint8_t    reg_2e;   ///< Value for register RH_RF22_REG_2E_SLICER_PEAK_HOLD
 	uint8_t    reg_58;   ///< Value for register RH_RF22_REG_58_CHARGE_PUMP_CURRENT_TRIMMING
-	uint8_t    reg_69;   ///< Value for register RH_RF22_REG_69_AGC_OVERRIDE1 
+	uint8_t    reg_69;   ///< Value for register RH_RF22_REG_69_AGC_OVERRIDE1
 	uint8_t    reg_6e;   ///< Value for register RH_RF22_REG_6E_TX_DATA_RATE1
-	uint8_t    reg_6f;   ///< Value for register RH_RF22_REG_6F_TX_DATA_RATE0 
+	uint8_t    reg_6f;   ///< Value for register RH_RF22_REG_6F_TX_DATA_RATE0
 	uint8_t    reg_70;   ///< Value for register RH_RF22_REG_70_MODULATION_CONTROL1
 	uint8_t    reg_71;   ///< Value for register RH_RF22_REG_71_MODULATION_CONTROL2
 	uint8_t    reg_72;   ///< Value for register RH_RF22_REG_72_FREQUENCY_DEVIATION
     } ModemConfig;
-  
+
     /// Choices for setModemConfig() for a selected subset of common modulation types,
     /// and data rates. If you need another configuration, use the register calculator.
     /// and call setModemRegisters() with your desired settings.
@@ -991,19 +1006,19 @@ public:
     /// distinct interrupt lines, one for each instance.
     /// \param[in] slaveSelectPin the Arduino pin number of the output to use to select the RH_RF22 before
     /// accessing it. Defaults to the normal SS pin for your Arduino (D10 for Diecimila, Uno etc, D53 for Mega, D10 for Maple)
-    /// \param[in] interruptPin The interrupt Pin number that is connected to the RF22 NIRQ interrupt line. 
+    /// \param[in] interruptPin The interrupt Pin number that is connected to the RF22 NIRQ interrupt line.
     /// Defaults to pin 2, as required by sparkfun RFM22 module shields.
     /// Caution: You must specify an interrupt capable pin.
     /// On many Arduino boards, there are limitations as to which pins may be used as interrupts.
     /// On Leonardo pins 0, 1, 2 or 3. On Mega2560 pins 2, 3, 18, 19, 20, 21. On Due and Teensy, any digital pin.
-    /// On other Arduinos pins 2 or 3. 
+    /// On other Arduinos pins 2 or 3.
     /// See http://arduino.cc/en/Reference/attachInterrupt for more details.
     /// On Chipkit Uno32, pins 38, 2, 7, 8, 35.
     /// On other boards, any digital pin may be used.
-    /// \param[in] spi Pointer to the SPI interface object to use. 
+    /// \param[in] spi Pointer to the SPI interface object to use.
     ///                Defaults to the standard Arduino hardware SPI interface
     RH_RF22(uint8_t slaveSelectPin = SS, uint8_t interruptPin = 2, RHGenericSPI& spi = hardware_spi);
-  
+
     /// Initialises this instance and the radio module connected to it.
     /// The following steps are taken:
     /// - Initialise the slave select pin and the SPI interface library
@@ -1016,37 +1031,37 @@ public:
     /// \return  true if everything was successful
     bool        init();
 
-    /// Issues a software reset to the 
+    /// Issues a software reset to the
     /// RH_RF22 module. Blocks for 1ms to ensure the reset is complete.
     void           reset();
 
     /// Reads and returns the device status register RH_RF22_REG_02_DEVICE_STATUS
     /// \return The value of the device status register
     uint8_t        statusRead();
-  
+
     /// Reads a value from the on-chip analog-digital converter
-    /// \param[in] adcsel Selects the ADC input to measure. One of RH_RF22_ADCSEL_*. Defaults to the 
+    /// \param[in] adcsel Selects the ADC input to measure. One of RH_RF22_ADCSEL_*. Defaults to the
     /// internal temperature sensor
-    /// \param[in] adcref Specifies the refernce voltage to use. One of RH_RF22_ADCREF_*. 
+    /// \param[in] adcref Specifies the refernce voltage to use. One of RH_RF22_ADCREF_*.
     /// Defaults to the internal bandgap voltage.
-    /// \param[in] adcgain Amplifier gain selection. 
+    /// \param[in] adcgain Amplifier gain selection.
     /// \param[in] adcoffs Amplifier offseet (0 to 15).
     /// \return The analog value. 0 to 255.
     uint8_t        adcRead(uint8_t adcsel = RH_RF22_ADCSEL_INTERNAL_TEMPERATURE_SENSOR,
 			   uint8_t adcref = RH_RF22_ADCREF_BANDGAP_VOLTAGE,
-			   uint8_t adcgain = 0, 
+			   uint8_t adcgain = 0,
 			   uint8_t adcoffs = 0);
 
     /// Reads the on-chip temperature sensor
     /// \param[in] tsrange Specifies the temperature range to use. One of RH_RF22_TSRANGE_*
-    /// \param[in] tvoffs Specifies the temperature value offset. This is actually signed value 
+    /// \param[in] tvoffs Specifies the temperature value offset. This is actually signed value
     /// added to the measured temperature value
     /// \return The measured temperature.
-    uint8_t        temperatureRead(uint8_t tsrange = RH_RF22_TSRANGE_M64_64C, uint8_t tvoffs = 0);   
+    uint8_t        temperatureRead(uint8_t tsrange = RH_RF22_TSRANGE_M64_64C, uint8_t tvoffs = 0);
 
-    /// Reads the wakeup timer value in registers RH_RF22_REG_17_WAKEUP_TIMER_VALUE1 
+    /// Reads the wakeup timer value in registers RH_RF22_REG_17_WAKEUP_TIMER_VALUE1
     /// and RH_RF22_REG_18_WAKEUP_TIMER_VALUE2
-    /// \return The wakeup timer value 
+    /// \return The wakeup timer value
     uint16_t       wutRead();
 
     /// Sets the wakeup timer period registers RH_RF22_REG_14_WAKEUP_TIMER_PERIOD1,
@@ -1057,12 +1072,12 @@ public:
     void           setWutPeriod(uint16_t wtm, uint8_t wtr = 0, uint8_t wtd = 0);
 
     /// Sets the transmitter and receiver centre frequency
-    /// \param[in] centre Frequency in MHz. 240.0 to 960.0. Caution, some versions of RH_RF22 and derivatives 
+    /// \param[in] centre Frequency in MHz. 240.0 to 960.0. Caution, some versions of RH_RF22 and derivatives
     /// implemented more restricted frequency ranges.
-    /// \param[in] afcPullInRange Sets the AF Pull In Range in MHz. Defaults to 0.05MHz (50kHz). 
+    /// \param[in] afcPullInRange Sets the AF Pull In Range in MHz. Defaults to 0.05MHz (50kHz).
     /// Range is 0.0 to 0.159375
-    /// for frequencies 240.0 to 480MHz, and 0.0 to 0.318750MHz for  frequencies 480.0 to 960MHz, 
-    /// \return true if the selected frquency centre + (fhch * fhs) is within range and the afcPullInRange 
+    /// for frequencies 240.0 to 480MHz, and 0.0 to 0.318750MHz for  frequencies 480.0 to 960MHz,
+    /// \return true if the selected frquency centre + (fhch * fhs) is within range and the afcPullInRange
     /// is within range
     bool        setFrequency(float centre, float afcPullInRange = 0.05);
 
@@ -1079,29 +1094,29 @@ public:
     /// Reads and returns the current RSSI value from register RH_RF22_REG_26_RSSI. Caution: this is
     /// in internal units (see figure 31 of RFM22B/23B documentation), not in dBm. If you want to find the RSSI in dBm
     /// of the last received message, use lastRssi() instead.
-    /// \return The current RSSI value 
+    /// \return The current RSSI value
     uint8_t        rssiRead();
 
     /// Reads and returns the current EZMAC value from register RH_RF22_REG_31_EZMAC_STATUS
     /// \return The current EZMAC value
     uint8_t        ezmacStatusRead();
 
-    /// Sets the parameters for the RH_RF22 Idle mode in register RH_RF22_REG_07_OPERATING_MODE. 
-    /// Idle mode is the mode the RH_RF22 will be in when not transmitting or receiving. The default idle mode 
-    /// is RH_RF22_XTON ie READY mode. 
-    /// \param[in] mode Mask of mode bits, using RH_RF22_SWRES, RH_RF22_ENLBD, RH_RF22_ENWT, 
+    /// Sets the parameters for the RH_RF22 Idle mode in register RH_RF22_REG_07_OPERATING_MODE.
+    /// Idle mode is the mode the RH_RF22 will be in when not transmitting or receiving. The default idle mode
+    /// is RH_RF22_XTON ie READY mode.
+    /// \param[in] mode Mask of mode bits, using RH_RF22_SWRES, RH_RF22_ENLBD, RH_RF22_ENWT,
     /// RH_RF22_X32KSEL, RH_RF22_PLLON, RH_RF22_XTON.
     void           setOpMode(uint8_t mode);
 
-    /// If current mode is Rx or Tx changes it to Idle. If the transmitter or receiver is running, 
+    /// If current mode is Rx or Tx changes it to Idle. If the transmitter or receiver is running,
     /// disables them.
     void           setModeIdle();
 
-    /// If current mode is Tx or Idle, changes it to Rx. 
+    /// If current mode is Tx or Idle, changes it to Rx.
     /// Starts the receiver in the RH_RF22.
     void           setModeRx();
 
-    /// If current mode is Rx or Idle, changes it to Rx. 
+    /// If current mode is Rx or Idle, changes it to Rx.
     /// Starts the transmitter in the RH_RF22.
     void           setModeTx();
 
@@ -1111,7 +1126,7 @@ public:
     /// or RH_RF22_RF23B_TXPOW_1DBM on an RF23B.
     /// The highest power available on RF22B is RH_RF22::RH_RF22_TXPOW_20DBM (20dBm).
     /// The highest power available on RF23B is RH_RF22::RH_RF22_RF23B_TXPOW_13DBM (13dBm).
-    /// Higher powers are available on RF23BP (using RH_RF22_RF23BP_TXPOW_*), 
+    /// Higher powers are available on RF23BP (using RH_RF22_RF23BP_TXPOW_*),
     /// and then only with an adequate power supply. See comments above.
     /// Caution: In some countries you may only select certain higher power levels if you
     /// are also using frequency hopping. Make sure you are aware of the legal
@@ -1119,13 +1134,13 @@ public:
     /// \param[in] power Transmitter power level, one of RH_RF22_*TXPOW_*
     void           setTxPower(uint8_t power);
 
-    /// Sets all the registered required to configure the data modem in the RH_RF22, including the data rate, 
-    /// bandwidths etc. You cas use this to configure the modem with custom configuraitons if none of the 
+    /// Sets all the registered required to configure the data modem in the RH_RF22, including the data rate,
+    /// bandwidths etc. You cas use this to configure the modem with custom configuraitons if none of the
     /// canned configurations in ModemConfigChoice suit you.
     /// \param[in] config A ModemConfig structure containing values for the modem configuration registers.
     void           setModemRegisters(const ModemConfig* config);
 
-    /// Select one of the predefined modem configurations. If you need a modem configuration not provided 
+    /// Select one of the predefined modem configurations. If you need a modem configuration not provided
     /// here, use setModemRegisters() with your own ModemConfig.
     /// \param[in] index The configuration choice.
     /// \return true if index is a valid choice.
@@ -1150,23 +1165,30 @@ public:
 
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then loads a message into the transmitter and starts the transmitter. Note that a message length
-    /// of 0 is NOT permitted. 
+    /// of 0 is NOT permitted.
     /// \param[in] data Array of data to be sent
     /// \param[in] len Number of bytes of data to send (> 0)
     /// \return true if the message length was valid and it was correctly queued for transmit
     bool        send(const uint8_t* data, uint8_t len);
 
+    /// Blocks until the current message (if any)
+    /// has been transmitted
+    /// \return true on success, false if the chip is not in transmit mode or other transmit failure
+#ifdef RH_RF22_IRQLESS
+    virtual bool   waitPacketSent();
+#endif
+
     /// Sets the length of the preamble
-    /// in 4-bit nibbles. 
-    /// Caution: this should be set to the same 
+    /// in 4-bit nibbles.
+    /// Caution: this should be set to the same
     /// value on all nodes in your network. Default is 8.
     /// Sets the message preamble length in RH_RF22_REG_34_PREAMBLE_LENGTH
-    /// \param[in] nibbles Preamble length in nibbles of 4 bits each.  
+    /// \param[in] nibbles Preamble length in nibbles of 4 bits each.
     void           setPreambleLength(uint8_t nibbles);
 
-    /// Sets the sync words for transmit and receive in registers RH_RF22_REG_36_SYNC_WORD3 
+    /// Sets the sync words for transmit and receive in registers RH_RF22_REG_36_SYNC_WORD3
     /// to RH_RF22_REG_39_SYNC_WORD0
-    /// Caution: SyncWords should be set to the same 
+    /// Caution: SyncWords should be set to the same
     /// value on all nodes in your network. Nodes with different SyncWords set will never receive
     /// each others messages, so different SyncWords can be used to isolate different
     /// networks from each other. Default is { 0x2d, 0xd4 }.
@@ -1205,7 +1227,7 @@ public:
     uint8_t maxMessageLength();
 
     /// Sets the radio into low-power sleep mode.
-    /// If successful, the transport will stay in sleep mode until woken by 
+    /// If successful, the transport will stay in sleep mode until woken by
     /// changing mode it idle, transmit or receive (eg by calling send(), recv(), available() etc)
     /// Caution: there is a time penalty as the radio takes a finite time to wake from sleep mode.
     /// \return true if sleep mode was successfully entered.
@@ -1215,7 +1237,14 @@ protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF22.
     /// Called automatically by isr*()
     /// Should not need to be called.
+#ifndef RH_RF22_IRQLESS
     void           handleInterrupt();
+#endif
+
+    /// Low level function to read the FIFO and put the received data into the receive buffer
+    /// Should not need to be called by user code.
+    /// Used in handleInterrupt() when RH_RF22_IRQLESS is not defined, OR in available() when RH_RF22_IRQLESS is defined
+    void           readFifo();
 
     /// Clears the receiver buffer.
     /// Internal use only
@@ -1237,12 +1266,12 @@ protected:
     /// \return false if the resulting message would exceed RH_RF22_MAX_MESSAGE_LEN, else true
     bool           appendTxBuf(const uint8_t* data, uint8_t len);
 
-    /// Internal function to load the next fragment of 
+    /// Internal function to load the next fragment of
     /// the current message into the transmitter FIFO
     /// Internal use only
     void           sendNextFragment();
 
-    ///  function to copy the next fragment from 
+    ///  function to copy the next fragment from
     /// the receiver FIF) into the receiver buffer
     void           readNextFragment();
 
@@ -1258,23 +1287,25 @@ protected:
     /// Internal use only
     void           resetTxFifo();
 
-    /// This function will be called by handleInterrupt() if an RF22 external interrupt occurs. 
-    /// This can only happen if external interrupts are enabled in the RF22 
-    /// (which they are not by default). 
-    /// Subclasses may override this function to get control when an RF22 external interrupt occurs. 
+#ifndef RH_RF22_IRQLESS
+    /// This function will be called by handleInterrupt() if an RF22 external interrupt occurs.
+    /// This can only happen if external interrupts are enabled in the RF22
+    /// (which they are not by default).
+    /// Subclasses may override this function to get control when an RF22 external interrupt occurs.
     virtual void   handleExternalInterrupt();
 
-    /// This function will be called by handleInterrupt() if an RF22 wakeup timer interrupt occurs. 
-    /// This can only happen if wakeup timer interrupts are enabled in theRF22 
-    /// (which they are not by default). 
-    /// Subclasses may override this function to get control when an RF22 wakeup timer interrupt occurs. 
+    /// This function will be called by handleInterrupt() if an RF22 wakeup timer interrupt occurs.
+    /// This can only happen if wakeup timer interrupts are enabled in theRF22
+    /// (which they are not by default).
+    /// Subclasses may override this function to get control when an RF22 wakeup timer interrupt occurs.
     virtual void   handleWakeupTimerInterrupt();
+#endif
 
-    /// Start the transmission of the contents 
+    /// Start the transmission of the contents
     /// of the Tx buffer
     void           startTransmit();
 
-    /// ReStart the transmission of the contents 
+    /// ReStart the transmission of the contents
     /// of the Tx buffer after a atransmission failure
     void           restartTransmit();
 
@@ -1290,6 +1321,8 @@ protected:
     void setIdleMode(uint8_t idleMode);
 
 protected:
+
+#ifndef RH_RF22_IRQLESS
     /// Low level interrupt service routine for RF22 connected to interrupt 0
     static void         isr0();
 
@@ -1311,9 +1344,10 @@ protected:
     /// The index into _deviceForInterrupt[] for this device (if an interrupt is already allocated)
     /// else 0xff
     uint8_t             _myInterruptIndex;
+#endif
 
     /// The radio mode to use when mode is idle
-    uint8_t             _idleMode; 
+    uint8_t             _idleMode;
 
     /// The device type reported by the RF22
     uint8_t             _deviceType;
@@ -1324,7 +1358,7 @@ protected:
     // These volatile members may get changed in the interrupt service routine
     /// Number of octets in the receiver buffer
     volatile uint8_t    _bufLen;
-    
+
     /// The receiver buffer
     uint8_t             _buf[RH_RF22_MAX_MESSAGE_LEN];
 
@@ -1333,12 +1367,16 @@ protected:
 
     /// Index into TX buffer of the next to send chunk
     volatile uint8_t    _txBufSentIndex;
-  
+
     /// Time in millis since the last preamble was received (and the last time the RSSI was measured)
     uint32_t            _lastPreambleTime;
 };
 
 /// @example rf22_client.pde
 /// @example rf22_server.pde
+/// @example raspi/rf22b/rf22b_client.cpp
+/// @example raspi/rf22b/rf22b_server.cpp
+/// @example raspi/rf22b/rf22b_reliable_datagram_client.cpp
+/// @example raspi/rf22b/rf22b_reliable_datagram_server.cpp
 
-#endif 
+#endif
