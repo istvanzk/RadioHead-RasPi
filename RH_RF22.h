@@ -1233,6 +1233,17 @@ public:
     /// \return true if sleep mode was successfully entered.
     virtual bool    sleep();
 
+    /// Sets the address of this node. Defaults to 0xFF.
+    /// Subclasses or the user may want to change this.
+    /// This will be used to test the adddress in incoming messages.
+    /// In non-promiscuous mode, only messages with a TO header the same as thisAddress or
+    /// the broadcast addess (0xFF) will be accepted.
+    /// In promiscuous mode, all messages will be accepted regardless of the TO header.
+    /// In a conventional multinode system, all nodes will have a unique address (which you could store in EEPROM).
+    /// You would normally set the header FROM address to be the same as thisAddress
+    /// (though you dont have to, allowing the possibilty of address spoofing).
+    void           setThisAddress(uint8_t thisAddress);
+
 protected:
     /// This is a low level function to handle the interrupts for one instance of RH_RF22.
     /// Called automatically by isr*()
@@ -1308,8 +1319,6 @@ protected:
     /// ReStart the transmission of the contents
     /// of the Tx buffer after a atransmission failure
     void           restartTransmit();
-
-    void           setThisAddress(uint8_t thisAddress);
 
     /// Sets the radio operating mode for the case when the driver is idle (ie not
     /// transmitting or receiving), allowing you to control the idle mode power requirements
