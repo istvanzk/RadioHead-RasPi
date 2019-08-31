@@ -144,35 +144,39 @@ int main (int argc, const char* argv[] )
     printf( "Listening ...\n" );
 
     //Begin the main body of code
-    while (!force_exit) {
+    while (!force_exit)
+    {
 
 #ifdef RF_IRQ_PIN
       // We have a IRQ pin ,pool it instead reading
       // Modules IRQ registers from SPI in each loop
 
-      // Rising edge fired ?
-      if (bcm2835_gpio_eds(RF_IRQ_PIN)) {
+      // Falling edge fired ?
+      if (bcm2835_gpio_eds(RF_IRQ_PIN))
+      {
         // Now clear the eds flag by setting it to 1
         bcm2835_gpio_set_eds(RF_IRQ_PIN);
         //printf("Packet Received, Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
 #endif
 
-        if (rf22.available()) {
+        if (rf22.available())
+        {
           // Should be a message for us now
           uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
           uint8_t len  = sizeof(buf);
           uint8_t from = rf22.headerFrom();
           uint8_t to   = rf22.headerTo();
-          uint8_t id   = rf22.headerId();
-          uint8_t flags= rf22.headerFlags();
+          //uint8_t id   = rf22.headerId();
+          //uint8_t flags= rf22.headerFlags();
           int8_t rssi  = rf22.lastRssi();
 
-          if (rf22.recv(buf, &len)) {
+          if (rf22.recv(buf, &len))
+          {
             printf("Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
             printbuffer(buf, len);
-          } else {
-            printf("Packet receive failed");
-          }
+          } else
+                printf("Packet receive failed");
+
           printf("\n");
         }
 

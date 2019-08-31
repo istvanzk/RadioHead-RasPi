@@ -137,12 +137,14 @@ int main (int argc, const char* argv[] )
     last_millis = millis();
 
     //Begin the main body of code
-    while (!force_exit) {
+    while (!force_exit)
+    {
 
       //printf( "millis()=%ld last=%ld diff=%ld\n", millis() , last_millis,  millis() - last_millis );
 
       // Send every 5 seconds
-      if ( millis() - last_millis > 5000 ) {
+      if ( millis() - last_millis > 5000 )
+      {
         last_millis = millis();
 
         // Send a message to rf22b_server
@@ -152,28 +154,47 @@ int main (int argc, const char* argv[] )
         printf("Sending %02d bytes to GW #%d => ", len, RF_GATEWAY_ID );
         printbuffer(data, len);
         printf("\n" );
-        rf22.send(data, len);
-        rf22.waitPacketSent();
+        rf22.send(data, len); // calls waitPacketSent()
+      }
 
-        // Now wait for a reply
-        uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-        uint8_t len = sizeof(buf);
+      // Now wait for a reply
 
-        if (rf22.waitAvailableTimeout(1000)) {
-          // Should be a reply message for us now
-          if (rf22.recv(buf, &len)) {
-            printf("got reply: ");
-            printbuffer(buf,len);
-            printf("\nRSSI: %d\n", rf22.lastRssi());
-          } else {
-            printf("recv failed");
-          }
-        } else {
-          printf("No reply, is rf22b_server running?\n");
+#ifdef RF_IRQ_PIN
+      // We have a IRQ pin, pool it instead reading
+      // Modules IRQ registers from SPI in each loop
+
+      // Falling edge fired ?
+      if (bcm2835_gpio_eds(RF_IRQ_PIN))
+      {
+        // Now clear the eds flag by setting it to 1
+        bcm2835_gpio_set_eds(RF_IRQ_PIN);
+        //printf("Packet Received, Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
+#endif
+
+        if (rf22.available())
+        {
+          // Should be a message for us now
+          uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
+          uint8_t len  = sizeof(buf);
+          uint8_t from = rf22.headerFrom();
+          uint8_t to   = rf22.headerTo();
+          //uint8_t id   = rf22.headerId();
+          //uint8_t flags= rf22.headerFlags();
+          int8_t rssi  = rf22.lastRssi();
+
+          if (rf22.recv(buf, &len))
+          {
+            printf("Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+            printbuffer(buf, len);
+          } else
+                printf("Packet receive failed");
+
+          printf("\n");
         }
 
-
+#ifdef RF_IRQ_PIN
       }
+#endif
 
       // Let OS doing other tasks
       // Since we do nothing until each 5 sec
