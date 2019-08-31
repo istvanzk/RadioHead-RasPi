@@ -578,7 +578,7 @@ bool RH_RF22::available()
     // Read the interrupt flags which clears the interrupt
     // This code acts partly as an 'interrupt handler'
     uint8_t _lastInterruptFlags[2];
-    spiReadBurst(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
+    spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
 
     if (_mode == RHModeRx && (_lastInterruptFlags[0] & RH_RF22_IPKVALID))
     {
