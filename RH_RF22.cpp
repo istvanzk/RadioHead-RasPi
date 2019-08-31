@@ -320,7 +320,7 @@ void RH_INTERRUPT_ATTR RH_RF22::isr2()
 
 // Low level function to read the FIFO and put the received data into the receive buffer
 // Should not need to be called by user code.
-void RH_RF69::readFifo()
+void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
 
