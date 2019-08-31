@@ -9,6 +9,7 @@
 
 #include <RHGenericSPI.h>
 #include <RHSPIDriver.h>
+#include <math.h>
 
 // If you don't want to use interupts (mainly to win one I/O pin) then
 // you just need to uncomment this line, if you're on Raspberry PI
