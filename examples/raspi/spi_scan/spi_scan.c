@@ -1,6 +1,6 @@
 // spi_scan.cpp
 //
-// Example program showing how to detect multiple module RH_RF69/RH_RF95 on Raspberry Pi
+// Example program showing how to detect multiple module RH_RF69/RH_RF95/RFM22B on Raspberry Pi
 // Requires bcm2835 library to be already installed
 // http://www.airspayce.com/mikem/bcm2835/
 // Use the Makefile in this directory:
@@ -18,7 +18,7 @@
 // RFM22B module, https://www.sparkfun.com/products/12030
 //
 // Contributed by Charles-Henri Hallard (hallard.me)
-// Updated by Istvan Z. Kovacs (istvanzk), September 2019
+// Updated for RFM22B by Istvan Z. Kovacs (istvanzk), September 2019
 
 #include <bcm2835.h>
 #include <stdio.h>
