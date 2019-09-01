@@ -61,15 +61,6 @@ void sig_handler(int sig)
   force_exit=true;
 }
 
-void printbuffer(uint8_t buff[], int len)
-{
-  for (int i = 0; i< len; i++)
-  {
-    printf(" %2X", buff[i]);
-  }
-}
-
-
 //Main Function
 int main (int argc, const char* argv[] )
 {
@@ -89,7 +80,7 @@ int main (int argc, const char* argv[] )
   printf( ", IRQ=GPIO%d", RF_IRQ_PIN );
   // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
-  pinMode(RF_IRQ_PIN, INPUT);
+  bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
   bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
 #endif
 
@@ -133,12 +124,12 @@ int main (int argc, const char* argv[] )
 
     // This is our Gateway ID
     manager.setThisAddress(RF_GATEWAY_ID);
-    //manager.setHeaderFrom(RF_GATEWAY_ID);
+    //rf22.setHeaderFrom(RF_GATEWAY_ID);
 
     // Where we're sending packet
     manager.setHeaderTo(RF_NODE_ID);
 
-    printf("RF22B Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B RD: Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TX_DBM);
 
 
     // Be sure to grab all node packet
@@ -149,9 +140,6 @@ int main (int argc, const char* argv[] )
     // We're ready to listen for incoming message
     // NOT available in RHDatagram
     rf22.setModeRx();
-
-    printf( "OK Node #%d @ %3.2fMHz\n", RF_NODE_ID, RF_FREQUENCY );
-    printf( "Listening ...\n" );
 
     uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
 
@@ -175,13 +163,14 @@ int main (int argc, const char* argv[] )
             // Wait for a message addressed to us from the client
             uint8_t len = sizeof(buf);
             uint8_t from;
+            int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAck(buf, &len, &from))
             {
-                printf("Datagram Packet [%02d] #%d => #%d %ddB: ", len, from, to);
+                printf("RF22B RD: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
                 printbuffer(buf, len);
-            }
+             }
             } else {
-                printf("Packet receive failed");
+                printf("RF22B RD: Packet receive failed\n");
             }
             printf("\n");
         }

@@ -61,15 +61,6 @@ void sig_handler(int sig)
   force_exit=true;
 }
 
-void printbuffer(uint8_t buff[], int len)
-{
-  for (int i = 0; i< len; i++)
-  {
-    printf(" %2X", buff[i]);
-  }
-}
-
-
 //Main Function
 int main (int argc, const char* argv[] )
 {
@@ -91,7 +82,7 @@ int main (int argc, const char* argv[] )
   printf( ", IRQ=GPIO%d", RF_IRQ_PIN );
   // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
-  pinMode(RF_IRQ_PIN, INPUT);
+  bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
   bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
 #endif
 
@@ -138,7 +129,7 @@ int main (int argc, const char* argv[] )
     // Where we're sending packet
     manager.setHeaderTo(RF_GATEWAY_ID);
 
-    printf("RF22 GroupID=%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B RD: Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
 
     last_millis = millis();
 
@@ -155,7 +146,7 @@ int main (int argc, const char* argv[] )
         uint8_t data[] = "Hi Raspi!";
         uint8_t len = sizeof(data);
 
-        printf("Sending %02d bytes to node #%d => ", len, RF_GATEWAY_ID );
+        printf("RF22B RD: Sending %02d bytes to node #%d => ", len, RF_GATEWAY_ID );
         printbuffer(data, len);
         printf("\n" );
 
@@ -164,17 +155,17 @@ int main (int argc, const char* argv[] )
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
             uint8_t len = sizeof(buf);
             uint8_t from;
+            int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
             {
-                printf("got reply: ");
-                printbuffer(buf,len);
-                printf("\nRSSI: %d\n", rf22.lastRssi());
+                printf("RF22B RD: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+                printbuffer(buf, len);
             } else {
-                printf("No reply, is rf22b_reliable_datagram_server running?\n");
+                printf("RF22B RD: No reply, is a rf22b_reliable_datagram_server running?\n");
             }
 
         } else {
-            printf("Datagram manager sendtoWait failed")
+            printf("RF22B RD: Datagram manager sendtoWait failed\n");
         }
 
       }
