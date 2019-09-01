@@ -123,7 +123,7 @@ int main (int argc, const char* argv[] )
     // Where we're sending packet
     rf22.setHeaderTo(RF_GATEWAY_ID);
 
-    printf("RF22 Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B: Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
 
     last_millis = millis();
 
@@ -142,7 +142,7 @@ int main (int argc, const char* argv[] )
         uint8_t data[] = "Hi Raspi!";
         uint8_t len = sizeof(data);
 
-        printf("Sending %02d bytes to GW #%d => ", len, RF_GATEWAY_ID );
+        printf("RF22B: Sending %02d bytes to GW #%d => ", len, RF_GATEWAY_ID );
         printbuffer(data, len);
         printf("\n" );
         rf22.send(data, len); // calls waitPacketSent()
@@ -175,10 +175,10 @@ int main (int argc, const char* argv[] )
 
           if (rf22.recv(buf, &len))
           {
-            printf("Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+            printf("RF22B: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
             printbuffer(buf, len);
           } else
-                printf("Packet receive failed");
+                printf("RF22B: Packet receive failed");
 
           printf("\n");
         }

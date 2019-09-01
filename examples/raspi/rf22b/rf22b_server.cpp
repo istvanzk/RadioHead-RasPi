@@ -122,7 +122,7 @@ int main (int argc, const char* argv[] )
     // Where we're sending packet
     rf22.setHeaderTo(RF_NODE_ID);
 
-    printf("RF22B Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B: Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TX_DBM);
 
 
     // Be sure to grab all node packet
@@ -132,8 +132,7 @@ int main (int argc, const char* argv[] )
     // We're ready to listen for incoming message
     rf22.setModeRx();
 
-    printf( "OK Node #%d @ %3.2fMHz\n", RF_NODE_ID, RF_FREQUENCY );
-    printf( "Listening ...\n" );
+    printf( "\tListening ...\n" );
 
     //Begin the main body of code
     while (!force_exit)
@@ -164,10 +163,10 @@ int main (int argc, const char* argv[] )
 
           if (rf22.recv(buf, &len))
           {
-            printf("Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+            printf("RF22B: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
             printbuffer(buf, len);
           } else
-                printf("Packet receive failed");
+                printf("RF22B: Packet receive failed");
 
           printf("\n");
         }
