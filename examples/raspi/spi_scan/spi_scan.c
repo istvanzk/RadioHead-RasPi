@@ -8,21 +8,24 @@
 // make
 // sudo ./spi_scan
 //
-// Will check for RFM92/95/96/98 or RFM69/RFM69HCW/RFM69W modules on SPI BUS
+// Will check for RFM92/95/96/98 or RFM69/RFM69HCW/RFM69W or RFM22B modules on SPI BUS
 // scan with CS = GPIO6, CE0, CE1 and GPIO26
 // So it should detect the following boards
 // LoRasPi board => https://github.com/hallard/LoRasPI
 // RasPI Lora Gateway Board iC880A and LinkLab Lora => https://github.com/ch2i/iC880A-Raspberry-PI
 // Raspberri PI Lora Gateway => https://github.com/hallard/RPI-Lora-Gateway
 // Dragino Raspberry PI hat => https://github.com/dragino/Lora
+// RFM22B module, https://www.sparkfun.com/products/12030
 //
 // Contributed by Charles-Henri Hallard (hallard.me)
+// Updated by Istvan Z. Kovacs (istvanzk), September 2019
 
 #include <bcm2835.h>
 #include <stdio.h>
 
 #include "RH_RF69.h"
 #include "RH_RF95.h"
+#include "RH_RF22.h"
 
 uint8_t readRegister(uint8_t cs_pin, uint8_t addr)
 {
@@ -37,7 +40,7 @@ uint8_t readRegister(uint8_t cs_pin, uint8_t addr)
 }
 
 void getModuleName(uint8_t version)
-{ 
+{
   printf(" => ");
   if (version==00 || version==0xFF )
     printf("Nothing!\n");
@@ -47,7 +50,9 @@ void getModuleName(uint8_t version)
     printf("SX1272 RF92");
   else if (version == 0x24)
     printf("SX1231 RFM69");
-  else 
+  else if (version == 0x06)
+    printf("RFM22B");
+  else
     printf("Unknown");
 
   if (version!=00 && version!=0xFF )
@@ -65,6 +70,11 @@ void readModuleVersion(uint8_t cs_pin)
   // RFM69 version is reg 0x10
   printf("Checking register(0x10) with CS=GPIO%02d", cs_pin);
   getModuleName ( readRegister( cs_pin, 0x10) ) ;
+
+  // RFM22B version is reg 0x01
+  printf("Checking register(0x01) with CS=GPIO%02d", cs_pin);
+  getModuleName ( readRegister( cs_pin, 0x01) ) ;
+
 }
 
 int main(int argc, char **argv)
@@ -97,7 +107,7 @@ int main(int argc, char **argv)
 
     // Now try to detect all modules
     for ( i=0; i<sizeof(CS_pins); i++) {
-      readModuleVersion( CS_pins[i] ); 
+      readModuleVersion( CS_pins[i] );
     }
 
     bcm2835_spi_end();
