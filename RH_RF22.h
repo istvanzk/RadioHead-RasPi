@@ -9,7 +9,6 @@
 
 #include <RHGenericSPI.h>
 #include <RHSPIDriver.h>
-#include <math.h>
 
 // If you don't want to use interupts (mainly to win one I/O pin) then
 // you just need to uncomment this line, if you're on Raspberry PI
@@ -715,6 +714,28 @@
 ///     D13              D52
 ///     D11              D51
 ///     D12              D50
+/// \endcode
+///
+/// \par Connecting RFM-22 to a Raspberry PI (V2)
+///
+/// There is no dedicated IRQ input on the GPIO. One can use any of the 'free' GPIO pins to detect falling/rising edge signals on it
+/// using the BCM2835 library functions bcm2835_gpio_set_pud, bcm2835_gpio_sets_eds, bcm2835_gpio_fen, and bcm2835_gpio_eds.
+/// See http://www.airspayce.com/mikem/bcm2835/ for details, and some examples in RadioHead/examples/raspi/rf22b.
+/// To connect a Raspberry Pi (V2) to a RFM22B module (https://www.sparkfun.com/products/12030) connect the pins like this:
+///\code
+///           Raspberry PI      RFM22B
+///    P1_20,P1_25(GND)----------GND-\ (ground in)
+///                              SDN-/ (shutdown in)
+///                 VDD----------VCC   (3.3V in)
+///      P1_22 (GPIO25)----------NIRQ  (interrupt request out)
+///         P1_24 (CE0)----------NSEL  (chip select in)
+///         P1_23 (SCK)----------SCK   (SPI clock in)
+///        P1_19 (MOSI)----------SDI   (SPI Data in)
+///        P1_21 (MISO)----------SDO   (SPI data out)
+///                           /--GPIO0 (GPIO0 out to control transmitter antenna TX_ANT)
+///                           \--TX_ANT (TX antenna control in) RFM22B only
+///                           /--GPIO1 (GPIO1 out to control receiver antenna RX_ANT)
+///                           \--RX_ANT (RX antenna control in) RFM22B only
 /// \endcode
 ///
 /// \par Interrupts

@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <math.h>
 
 typedef unsigned char byte;
 
@@ -34,7 +35,7 @@ typedef unsigned char byte;
 
 // No memcpy_P Raspberry PI
 #ifndef memcpy_P
-#define memcpy_P memcpy 
+#define memcpy_P memcpy
 #endif
 
 class SPIClass
