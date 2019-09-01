@@ -1,5 +1,6 @@
-// defined pins definition of different hardware boards used
+// Defined pins definition of different hardware boards used
 // Contributed by Charles-Henri Hallard http://hallard.me
+// Updated for RFM22B by Istvan Z. Kovacs (istvanzk), September 2019
 
 // If a pin is not used just define it to NOT_A_PIN
 // or do not define it, both works
@@ -65,7 +66,7 @@
 #define RF_RST_PIN RPI_V2_GPIO_P1_11 // Reset on GPIO17 so P1 connector pin #11
 #define RF_LED_PIN NOT_A_PIN		 // No onboard led to drive
 
-// HopeRF RF22 based radio modules (no onboard led - reset pin not used)
+// HopeRF RFM22B based radio modules (no onboard led - reset pin not used)
 // =========================================
 // see http://www.sparkfun.com/products/10153
 #elif defined (BOARD_RFM22B)
