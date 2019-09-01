@@ -76,7 +76,7 @@ int main (int argc, const char* argv[] )
   printf( ", IRQ=GPIO%d", RF_IRQ_PIN );
   // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
-  pinMode(RF_IRQ_PIN, INPUT);
+  bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
   bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
 #endif
 
