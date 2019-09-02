@@ -9,13 +9,13 @@
 // sudo ./spi_scan
 //
 // Will check for RFM92/95/96/98 or RFM69/RFM69HCW/RFM69W or RFM22B modules on SPI BUS
-// scan with CS = GPIO6, CE0, CE1 and GPIO26
-// So it should detect the following boards
-// LoRasPi board => https://github.com/hallard/LoRasPI
-// RasPI Lora Gateway Board iC880A and LinkLab Lora => https://github.com/ch2i/iC880A-Raspberry-PI
-// Raspberri PI Lora Gateway => https://github.com/hallard/RPI-Lora-Gateway
-// Dragino Raspberry PI hat => https://github.com/dragino/Lora
-// RFM22B module, https://www.sparkfun.com/products/12030
+// scan with CS = CE0, CE1, CE2, GPIO25, GPIO26
+// So it should detect the following boards:
+//  LoRasPi board => https://github.com/hallard/LoRasPI
+//  RasPI Lora Gateway Board iC880A and LinkLab Lora => https://github.com/ch2i/iC880A-Raspberry-PI
+//  Raspberri PI Lora Gateway => https://github.com/hallard/RPI-Lora-Gateway
+//  Dragino Raspberry PI hat => https://github.com/dragino/Lora
+//  RFM22B module, https://www.sparkfun.com/products/12030
 //
 // Contributed by Charles-Henri Hallard (hallard.me)
 // Updated for RFM22B by Istvan Z. Kovacs (istvanzk), September 2019
@@ -87,8 +87,8 @@ int main(int argc, char **argv)
 
   } else {
     // List of all CS line where module can be connected
-    // GPIO6, GPIO8/CE0, GPIO7/CE1, GPIO26
-    uint8_t CS_pins[] = {6, 7, 8, 26};
+    // GPIO8/CE0, GPIO7/CE1, GPIO16/CE2, GPIO25, GPIO26
+    uint8_t CS_pins[] = {7, 8};
     uint8_t i;
 
     // Init SPI
