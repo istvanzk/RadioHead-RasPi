@@ -5,7 +5,7 @@
 
 CC            = g++
 CFLAGS        = -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY
-LIBS          = -lbcm2835 
+LIBS          = -lbcm2835
 RADIOHEADBASE = ../../..
 INCLUDE       = -I$(RADIOHEADBASE)
 
@@ -17,5 +17,11 @@ irq_test.o: irq_test.c
 irq_test: irq_test.o
 				$(CC) $^ $(LIBS) -o irq_test
 
+irq_test_fen.o: irq_test.c
+				$(CC) $(CFLAGS) -c $(INCLUDE) $<
+
+irq_test_fen: irq_test.o
+				$(CC) $^ $(LIBS) -o irq_test_fen
+
 clean:
-				rm -rf *.o irq_test
+				rm -rf *.o irq_test irq_test_fen
