@@ -15,6 +15,8 @@
 
 #include <bcm2835.h>
 #include <stdio.h>
+#include <signal.h>
+#include <unistd.h>
 
 #define RF_IRQ_PIN RPI_V2_GPIO_P1_22 // IRQ on GPIO25 so P1 connector pin #22
 
