@@ -25,7 +25,7 @@ volatile sig_atomic_t force_exit = false;
 
 void sig_handler(int sig)
 {
-  printf("\n%s Break received, exiting!\n", __BASEFILE__);
+  printf("\nBreak received, exiting!\n");
   force_exit=true;
 }
 
