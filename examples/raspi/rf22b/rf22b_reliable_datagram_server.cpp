@@ -141,7 +141,7 @@ int main (int argc, const char* argv[] )
     // NOT available in RHDatagram
     rf22.setModeRx();
 
-    uint8_t buf[RH_NRF24_MAX_MESSAGE_LEN];
+    uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
 
     //Begin the main body of code
     while (!force_exit) {
@@ -163,12 +163,12 @@ int main (int argc, const char* argv[] )
             // Wait for a message addressed to us from the client
             uint8_t len = sizeof(buf);
             uint8_t from;
+	    uint8_t to   = rf22.headerTo();
             int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAck(buf, &len, &from))
             {
                 printf("RF22B RD: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
                 printbuffer(buf, len);
-             }
             } else {
                 printf("RF22B RD: Packet receive failed\n");
             }

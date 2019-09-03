@@ -155,6 +155,7 @@ int main (int argc, const char* argv[] )
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
             uint8_t len = sizeof(buf);
             uint8_t from;
+	    uint8_t to   = rf22.headerTo();
             int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
             {
