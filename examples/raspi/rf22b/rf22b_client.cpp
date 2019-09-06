@@ -42,7 +42,7 @@
 
 // Our RFM22B Configuration
 #define RF_FREQUENCY  434.00
-#define RF_TX_DBM     RH_RF22_TXPOW_11DBM
+#define RF_TXPOW      RH_RF22_TXPOW_11DBM
 #define RF_GROUP_ID   22 // All devices
 #define RF_GATEWAY_ID 1  // Server ID (where to send packets)
 #define RF_NODE_ID    10 // Client ID (device sending the packets)
@@ -68,15 +68,12 @@ int main (int argc, const char* argv[] )
   printf( "%s\n", __BASEFILE__);
 
   if (!bcm2835_init()) {
-    fprintf( stderr, "%s bcm2835_init() Failed\n\n", __BASEFILE__ );
+    fprintf( stderr, "\n%s BCM2835: init() failed\n", __BASEFILE__ );
     return 1;
   }
 
-  printf( "RF22B CS=GPIO%d", RF_CS_PIN);
-
 
 #ifdef RF_IRQ_PIN
-  printf( ", IRQ=GPIO%d", RF_IRQ_PIN );
   // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
   bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
@@ -84,9 +81,9 @@ int main (int argc, const char* argv[] )
 #endif
 
   if (!rf22.init()) {
-    fprintf( stderr, "\nRF22B module init failed, Please verify wiring/module\n" );
+    fprintf( stderr, "\nRF22B: Module init() failed. Please verify wiring/module\n" );
   } else {
-    printf( "\nRF22B module seen OK!\r\n");
+    printf( "RF22B: Module seen OK. CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
 #ifdef RF_IRQ_PIN
     // Since we may check IRQ line with bcm_2835 Falling edge detection
@@ -98,6 +95,8 @@ int main (int argc, const char* argv[] )
     // Enable Falling Edge Detect Enable for the specified pin.
     // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     bcm2835_gpio_fen(RF_IRQ_PIN);
+
+    printf("BCM2835: Falling edge detect enabled on GPIO%d", RF_IRQ_PIN);
 #endif
 
 
@@ -105,7 +104,7 @@ int main (int argc, const char* argv[] )
 
     // High power version (RFM69HW or RFM69HCW) you need to set
     // transmitter power to at least 14 dBm up to 20dBm
-    rf22.setTxPower(RF_TX_DBM);
+    rf22.setTxPower(RF_TXPOW);
 
     // set Network ID (by sync words)
     uint8_t syncwords[2];
@@ -123,7 +122,7 @@ int main (int argc, const char* argv[] )
     // Where we're sending packet
     rf22.setHeaderTo(RF_GATEWAY_ID);
 
-    printf("RF22B: Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B: Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with 0x%02X TxPw\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TXPOW);
 
     last_millis = millis();
 
@@ -144,8 +143,10 @@ int main (int argc, const char* argv[] )
 
         printf("RF22B: Sending %02d bytes to GW #%d => ", len, RF_GATEWAY_ID );
         printbuffer(data, len);
-        printf("\n" );
-        rf22.send(data, len); // calls waitPacketSent()
+        if(rf22.send(data, len)) // calls waitPacketSent()
+            printf(" : Sent OK!\n" );
+        else
+            printf(" : NOT Sent!\n" );
       }
 
       // Now wait for a reply
@@ -159,12 +160,15 @@ int main (int argc, const char* argv[] )
       {
         // Now clear the eds flag by setting it to 1
         bcm2835_gpio_set_eds(RF_IRQ_PIN);
-        //printf("Packet Received, Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
+        printf("BCM2835: Packet Received. Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
 #endif
 
         if (rf22.available())
         {
           // Should be a message for us now
+
+          printf("RF22B: Received packet available\n");
+
           uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
           uint8_t len  = sizeof(buf);
           uint8_t from = rf22.headerFrom();
