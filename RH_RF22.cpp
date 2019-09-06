@@ -97,6 +97,11 @@ bool RH_RF22::init()
 
     // Software reset the device
     reset();
+    // Issue software reset to get all registers to default state
+    //spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
+    // Wait for chip ready
+    while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
+	;
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
@@ -108,12 +113,6 @@ bool RH_RF22::init()
 //	Serial.println(_deviceType);
 	return false;
     }
-
-    // Issue software reset to get all registers to default state
-    spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
-    // Wait for chip ready
-    while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
-	;
 
     // Enable interrupt output on the radio. Interrupt line will now go high until
     // an interrupt occurs
@@ -359,7 +358,7 @@ void RH_RF22::reset()
 {
     spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
     // Wait for it to settle
-    delay(1); // SWReset time is nominally 100usec
+    delay(100); // SWReset time is nominally 100usec
 }
 
 uint8_t RH_RF22::statusRead()
@@ -663,10 +662,12 @@ void RH_RF22::restartTransmit()
 bool RH_RF22::send(const uint8_t* data, uint8_t len)
 {
     bool ret = true;
-    waitPacketSent(); // Make sure we dont interrupt an outgoing message
 
-    if (!waitCAD())
-	return false;  // Check channel activity
+    if(!waitPacketSent()) // Make sure we dont interrupt an outgoing message
+        return false;
+
+    if (!waitCAD()) // Check channel activity
+        return false;
 
     ATOMIC_BLOCK_START;
     spiWrite(RH_RF22_REG_3A_TRANSMIT_HEADER3, _txHeaderTo);
@@ -674,11 +675,11 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     spiWrite(RH_RF22_REG_3C_TRANSMIT_HEADER1, _txHeaderId);
     spiWrite(RH_RF22_REG_3D_TRANSMIT_HEADER0, _txHeaderFlags);
     if (!fillTxBuf(data, len))
-	ret = false;
+        ret = false;
     else
-	startTransmit();
+        startTransmit();
     ATOMIC_BLOCK_END;
-//    printBuffer("send:", data, len);
+//    printBuffer("RF22B::send:", data, len);
     return ret;
 }
 
