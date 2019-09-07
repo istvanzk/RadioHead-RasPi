@@ -41,7 +41,7 @@ typedef unsigned char byte;
 class SPIClass
 {
   public:
-    static byte transfer(byte _data);
+    static uint8_t transfer(uint8_t _data);
     // SPI Configuration methods
     static void begin(); // Default
     static void begin(uint16_t, uint8_t, uint8_t);
@@ -76,11 +76,11 @@ extern SerialSimulator Serial;
 
 void RasPiSetup();
 
-void pinMode(unsigned char pin, unsigned char mode);
+void pinMode(uint8_t pin, uint8_t mode);
 
-void digitalWrite(unsigned char pin, unsigned char value);
+void digitalWrite(uint8_t pin, uint8_t value);
 
-unsigned char digitalRead(unsigned char pin) ;
+uint8_t digitalRead(uint8_t pin) ;
 
 unsigned long millis();
 
