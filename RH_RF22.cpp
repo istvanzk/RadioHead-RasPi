@@ -663,8 +663,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
 {
     bool ret = true;
 
-    if(!waitPacketSent()) // Make sure we dont interrupt an outgoing message
-        return false;
+    waitPacketSent(); // Make sure we dont interrupt an outgoing message
 
     if (!waitCAD()) // Check channel activity
         return false;
@@ -677,9 +676,14 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     if (!fillTxBuf(data, len))
         ret = false;
     else
+    {
         startTransmit();
+        ret = waitPacketSent();
+    }
     ATOMIC_BLOCK_END;
-//    printBuffer("RF22B::send:", data, len);
+    printf("RH_RF22::send: ")
+    printbuffer(data, len);
+    printf("\n");
     return ret;
 }
 
@@ -711,14 +715,14 @@ bool RH_RF22::fillTxBuf(const uint8_t* data, uint8_t len)
 {
     clearTxBuf();
     if (!len)
-	return false;
+        return false;
     return appendTxBuf(data, len);
 }
 
 bool RH_RF22::appendTxBuf(const uint8_t* data, uint8_t len)
 {
     if (((uint16_t)_bufLen + len) > RH_RF22_MAX_MESSAGE_LEN)
-	return false;
+        return false;
     ATOMIC_BLOCK_START;
     memcpy(_buf + _bufLen, data, len);
     _bufLen += len;
