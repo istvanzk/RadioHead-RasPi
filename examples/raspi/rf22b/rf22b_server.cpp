@@ -97,7 +97,7 @@ int main (int argc, const char* argv[] )
     // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     bcm2835_gpio_fen(RF_IRQ_PIN);
 
-    printf("BCM2835: Falling edge detect enabled on GPIO%d", RF_IRQ_PIN);
+    printf("BCM2835: Falling edge detect enabled on GPIO%d\n", RF_IRQ_PIN);
 #endif
 
 
@@ -187,6 +187,7 @@ int main (int argc, const char* argv[] )
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
+  bcm2835_spi_end();
   bcm2835_close();
   return 0;
 }
