@@ -78,14 +78,14 @@ void RH_RF22::setIdleMode(uint8_t idleMode)
 bool RH_RF22::init()
 {
     if (!RHSPIDriver::init())
-	return false;
+        return false;
 
 #ifndef RH_RF22_IRQLESS
 
     // Determine the interrupt number that corresponds to the interruptPin
     int interruptNumber = digitalPinToInterrupt(_interruptPin);
     if (interruptNumber == NOT_AN_INTERRUPT)
-	return false;
+        return false;
 #ifdef RH_ATTACHINTERRUPT_TAKES_PIN_NUMBER
     interruptNumber = _interruptPin;
 #endif
@@ -101,7 +101,7 @@ bool RH_RF22::init()
     //spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
     // Wait for chip ready
     while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
-	;
+        delay(100);
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
@@ -111,12 +111,16 @@ bool RH_RF22::init()
     {
 //	Serial.print("unknown device type: ");
 //	Serial.println(_deviceType);
-	return false;
+        return false;
     }
 
     // Enable interrupt output on the radio. Interrupt line will now go high until
     // an interrupt occurs
+#ifndef RH_RF22_IRQLESS
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
+#else
+    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
+#endif
     spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
 
 
