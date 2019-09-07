@@ -130,7 +130,7 @@ int main (int argc, const char* argv[] )
     while (!force_exit)
     {
 
-      //printf( "millis()=%ld last=%ld diff=%ld\n", millis() , last_millis,  millis() - last_millis );
+      printf( "millis()=%ld last=%ld diff=%ld\n", millis() , last_millis,  millis() - last_millis );
 
       // Send every 5 seconds
       if ( millis() - last_millis > 5000 )
@@ -147,6 +147,7 @@ int main (int argc, const char* argv[] )
             printf(" : Sent OK!\n" );
         else
             printf(" : NOT Sent!\n" );
+        bcm2835_gpio_set_eds(RF_IRQ_PIN);
       }
 
       // Now wait for a reply
