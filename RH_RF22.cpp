@@ -681,7 +681,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
         ret = waitPacketSent();
     }
     ATOMIC_BLOCK_END;
-    printf("RH_RF22::send: ")
+    printf("RH_RF22::send: ");
     printbuffer(data, len);
     printf("\n");
     return ret;
