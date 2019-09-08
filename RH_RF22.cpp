@@ -337,6 +337,7 @@ void RH_RF22::readFifo()
 	    _rxBad++;
 	    _mode = RHModeIdle;
 	    clearRxBuf();
+        printf(" - RXBUF OVF - ");
 	    return; // Hmmm receiver buffer overflow.
 	}
 
@@ -355,7 +356,8 @@ void RH_RF22::readFifo()
         _mode = RHModeIdle;
         _rxBufValid = true;
         printf(" - RXBUF VALID - ");
-    }
+    } else
+        printf(" - RXBUF IGNOR - ");
 }
 
 
@@ -603,7 +605,7 @@ bool RH_RF22::available()
             _rxBad++;
             clearRxBuf();
             resetRxFifo();
-            //_mode = RHModeIdle;
+            _mode = RHModeIdle;
             setModeRx(); // Keep trying
             printf(" - CRC ERROR - ");
         }
