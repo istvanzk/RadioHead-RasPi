@@ -106,11 +106,12 @@ int main (int argc, const char* argv[] )
     // transmitter power to at least 14 dBm up to 20dBm
     rf22.setTxPower(RF_TXPOW);
 
-    // set Network ID (by sync words)
-    uint8_t syncwords[2];
-    syncwords[0] = 0x2d;
-    syncwords[1] = RF_GROUP_ID;
-    rf22.setSyncWords(syncwords, sizeof(syncwords));
+    // Set Network ID (by sync words)
+    // Use this for any non-default setup, else leave commented out
+    //uint8_t syncwords[2];
+    //syncwords[0] = 0x2d;
+    //syncwords[1] = RF_GROUP_ID;
+    //rf22.setSyncWords(syncwords, sizeof(syncwords));
 
     // Adjust Frequency
     rf22.setFrequency(RF_FREQUENCY);
@@ -181,8 +182,9 @@ int main (int argc, const char* argv[] )
 
           if (rf22.recv(buf, &len))
           {
-            printf("RF22B: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+            printf("RF22B: Packet received [%02d] #%d => #%d %ddBm: '", len, from, to, rssi);
             printbuffer(buf, len);
+	    printf("'");
           } else
             printf("RF22B: Packet receive failed");
 
