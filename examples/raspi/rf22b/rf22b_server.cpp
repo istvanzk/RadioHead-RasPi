@@ -72,12 +72,11 @@ int main (int argc, const char* argv[] )
 
   printf( "RF22B CS=GPIO%d", RF_CS_PIN);
 
-#ifdef RF_IRQ_PIN
+
   // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
   bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
   bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
-#endif
 
 
   if (!rf22.init()) {
@@ -85,8 +84,6 @@ int main (int argc, const char* argv[] )
   } else {
     printf( "RF22B: Module seen OK. CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
-
-#ifdef RF_IRQ_PIN
     // Since we may check IRQ line with bcm_2835 Falling edge detection
     // In case radio already have a packet, IRQ is low and will never
     // go to high so never fire again
@@ -98,7 +95,6 @@ int main (int argc, const char* argv[] )
     bcm2835_gpio_fen(RF_IRQ_PIN);
 
     printf("BCM2835: Falling edge detect enabled on GPIO%d\n", RF_IRQ_PIN);
-#endif
 
 
     // Defaults after init are 434.0MHz, 0.05MHz AFC pull-in, modulation FSK_Rb2_4Fd36, 8dBm Tx power
@@ -139,17 +135,17 @@ int main (int argc, const char* argv[] )
     while (!force_exit)
     {
 
-#ifdef RF_IRQ_PIN
       // We have a IRQ pin ,pool it instead reading
       // Modules IRQ registers from SPI in each loop
 
       // Falling edge fired ?
-      if (bcm2835_gpio_eds(RF_IRQ_PIN))
+      //if (bcm2835_gpio_eds(RF_IRQ_PIN))
+      if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
       {
         // Now clear the eds flag by setting it to 1
-        bcm2835_gpio_set_eds(RF_IRQ_PIN);
-        printf("BCM2835: Packet Received. Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
-#endif
+        //bcm2835_gpio_set_eds(RF_IRQ_PIN);
+        //printf("BCM2835: Packet Received. Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
+        printf("BCM2835: Packet Received. LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
         if (rf22.available())
         {
@@ -167,26 +163,26 @@ int main (int argc, const char* argv[] )
 
           if (rf22.recv(buf, &len))
           {
-            printf("RF22B: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+            printf("RF22B: Packet received [%02d] #%d => #%d %ddB: '", len, from, to, rssi);
             printbuffer(buf, len);
+            printf("' ");
           } else
-                printf("RF22B: Packet receive failed");
+            printf("RF22B: Packet receive failed");
 
           printf("\n");
         }
 
-#ifdef RF_IRQ_PIN
       }
-#endif
 
       // Let OS doing other tasks
       // For timed critical appliation you can reduce or delete
       // this delay, but this will charge CPU usage, take care and monitor
-      bcm2835_delay(100);
+      delay(100);
     }
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
+  //bcm2835_gpio_clr_fen(RF_IRQ_PIN);
   bcm2835_spi_end();
   bcm2835_close();
   return 0;
