@@ -354,6 +354,7 @@ void RH_RF22::readFifo()
         _rxGood++;
         _mode = RHModeIdle;
         _rxBufValid = true;
+        printf(" - RXBUF VALID - ");
     }
 }
 
@@ -600,6 +601,7 @@ bool RH_RF22::available()
             resetRxFifo();
             _mode = RHModeIdle;
             setModeRx(); // Keep trying
+            printf(" - CRC ERROR - ");
         }
 
         // Read RSSI
@@ -609,6 +611,7 @@ bool RH_RF22::available()
             _lastPreambleTime = millis();
             resetRxFifo();
             clearRxBuf();
+            printf(" - PRE VALID - ");
         }
     }
 #endif
