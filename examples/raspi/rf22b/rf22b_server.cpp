@@ -165,7 +165,7 @@ int main (int argc, const char* argv[] )
 
           if (rf22.recv(buf, &len))
           {
-            printf("RF22B: Packet received [%02d] #%d => #%d %ddBm: '", len, from, to, rssi);
+            printf("RF22B: Packet received, %02d bytes, from #%d to #%d, with %ddBm => '", len, from, to, rssi);
             printbuffer(buf, len);
             printf("' ");
           } else
@@ -179,7 +179,7 @@ int main (int argc, const char* argv[] )
       // Let OS doing other tasks
       // For timed critical appliation you can reduce or delete
       // this delay, but this will charge CPU usage, take care and monitor
-      delay(100);
+      delay(10);
     }
   }
 
