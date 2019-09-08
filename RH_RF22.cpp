@@ -633,8 +633,8 @@ bool RH_RF22::available()
 
 bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
 {
-    if (!available())
-        return false;
+    //if (!available())
+    //    return false;
 
     if (buf && len)
     {
