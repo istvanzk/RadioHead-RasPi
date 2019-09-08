@@ -584,14 +584,18 @@ bool RH_RF22::available()
     uint8_t _lastInterruptFlags[2];
     spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
 
-    if (_mode == RHModeRx && (_lastInterruptFlags[0] & RH_RF22_IPKVALID))
+    if (_mode == RHModeTx)
+        return false;
+
+    if (_mode == RHModeRx)
     {
-        // A complete message has been received with good CRC
+        // A complete message has been received with good CRC?
 
         setModeIdle();
 
         // Save msg in our buffer _buf with length _bufLen
-        readFifo();
+        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+            readFifo();
 
         // Check CRC
         if (_lastInterruptFlags[0] & RH_RF22_ICRCERROR)
@@ -599,7 +603,7 @@ bool RH_RF22::available()
             _rxBad++;
             clearRxBuf();
             resetRxFifo();
-            _mode = RHModeIdle;
+            //_mode = RHModeIdle;
             setModeRx(); // Keep trying
             printf(" - CRC ERROR - ");
         }
@@ -609,8 +613,8 @@ bool RH_RF22::available()
         {
             _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
             _lastPreambleTime = millis();
-            resetRxFifo();
             clearRxBuf();
+            resetRxFifo();
             printf(" - PRE VALID - ");
         }
     }
@@ -628,7 +632,7 @@ bool RH_RF22::available()
 bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
 {
     if (!available())
-	return false;
+        return false;
 
     if (buf && len)
     {
@@ -639,7 +643,7 @@ bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
         ATOMIC_BLOCK_END;
     }
     clearRxBuf();
-    resetRxFifo();
+    setModeRx();
     return true;
 }
 
