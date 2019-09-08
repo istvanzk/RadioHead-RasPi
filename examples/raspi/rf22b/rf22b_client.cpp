@@ -55,8 +55,13 @@ volatile sig_atomic_t force_exit = false;
 
 void sig_handler(int sig)
 {
-  printf("\n%s Break received, exiting!\n", __BASEFILE__);
-  force_exit=true;
+  printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
+  //force_exit=true;
+
+  bcm2835_spi_end();
+  bcm2835_close();
+
+  exit(sig);	
 }
 
 //Main Function
@@ -65,7 +70,7 @@ int main (int argc, const char* argv[] )
   static unsigned long last_millis;
 
   signal(SIGINT, sig_handler);
-  printf( "%s\n", __BASEFILE__);
+  printf( "%s started\n", __BASEFILE__);
 
   if (!bcm2835_init()) {
     fprintf( stderr, "\n%s BCM2835: init() failed\n", __BASEFILE__ );
@@ -80,7 +85,7 @@ int main (int argc, const char* argv[] )
   if (!rf22.init()) {
     fprintf( stderr, "\nRF22B: Module init() failed. Please verify wiring/module\n" );
   } else {
-    printf( "RF22B: Module seen OK. CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
+    printf( "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
     // Since we may check IRQ line with bcm_2835 Falling edge detection
     // In case radio already have a packet, IRQ is low and will never
