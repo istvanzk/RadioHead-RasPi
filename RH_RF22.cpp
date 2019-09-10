@@ -337,7 +337,7 @@ void RH_RF22::readFifo()
 	    _rxBad++;
 	    _mode = RHModeIdle;
 	    clearRxBuf();
-        printf(" - RXBUF OVF - ");
+        printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
 	    return; // Hmmm receiver buffer overflow.
 	}
 
@@ -586,7 +586,7 @@ bool RH_RF22::available()
     uint8_t _lastInterruptFlags[2];
     spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
 
-    printf("STATUS1= %02x\nSTATUS2= %02x\n", _lastInterruptFlags[0], _lastInterruptFlags[1]);
+    //printf("STATUS1= %02x\nSTATUS2= %02x\n", _lastInterruptFlags[0], _lastInterruptFlags[1]);
 
     if (_mode == RHModeTx)
         return false;
