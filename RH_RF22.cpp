@@ -139,21 +139,21 @@ bool RH_RF22::init()
     // yourself based on knowledge of what Arduino board you are running on.
     if (_myInterruptIndex == 0xff)
     {
-	// First run, no interrupt allocated yet
-	if (_interruptCount <= RH_RF22_NUM_INTERRUPTS)
-	    _myInterruptIndex = _interruptCount++;
-	else
-	    return false; // Too many devices, not enough interrupt vectors
+        // First run, no interrupt allocated yet
+        if (_interruptCount <= RH_RF22_NUM_INTERRUPTS)
+            _myInterruptIndex = _interruptCount++;
+        else
+            return false; // Too many devices, not enough interrupt vectors
     }
     _deviceForInterrupt[_myInterruptIndex] = this;
     if (_myInterruptIndex == 0)
-	attachInterrupt(interruptNumber, isr0, FALLING);
+        attachInterrupt(interruptNumber, isr0, FALLING);
     else if (_myInterruptIndex == 1)
-	attachInterrupt(interruptNumber, isr1, FALLING);
+        attachInterrupt(interruptNumber, isr1, FALLING);
     else if (_myInterruptIndex == 2)
-	attachInterrupt(interruptNumber, isr2, FALLING);
+        attachInterrupt(interruptNumber, isr2, FALLING);
     else
-	return false; // Too many devices, not enough interrupt vectors
+        return false; // Too many devices, not enough interrupt vectors
 
 #endif
 
@@ -598,7 +598,7 @@ bool RH_RF22::available()
         setModeIdle();
 
         // Save msg in our buffer _buf with length _bufLen
-        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+        //if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
             readFifo();
 
         // Check CRC
