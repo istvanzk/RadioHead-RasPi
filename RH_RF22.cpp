@@ -336,8 +336,8 @@ void RH_RF22::readFifo()
 	{
 	    _rxBad++;
 	    _mode = RHModeIdle;
-	    clearRxBuf();
         printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
+	    clearRxBuf();
 	    return; // Hmmm receiver buffer overflow.
 	}
 
