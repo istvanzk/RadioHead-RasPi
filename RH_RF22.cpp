@@ -627,7 +627,9 @@ bool RH_RF22::available()
         if (_mode == RHModeTx)
             return false;
         setModeRx(); // Make sure we are receiving
-    }
+    } else
+        printf(" - RXBUF VALID - ");
+
     return _rxBufValid;
 }
 
