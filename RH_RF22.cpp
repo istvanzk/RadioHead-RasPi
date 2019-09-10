@@ -580,11 +580,13 @@ void RH_RF22::clearRxBuf()
 bool RH_RF22::available()
 {
 #ifdef RH_RF22_IRQLESS
-    // As we have not enabled IRQ, ne need to check internal IRQ register of device
-    // Read the interrupt flags which clears the interrupt
+    // As we have not enabled IRQ, we need to check internal IRQ register of device
+    // Read the interrupt flags, which clears the interrupt
     // This code acts partly as an 'interrupt handler'
     uint8_t _lastInterruptFlags[2];
     spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
+
+    printf("STATUS1= %02x\nSTATUS2= %02x\n", _lastInterruptFlags[0], _lastInterruptFlags[1]);
 
     if (_mode == RHModeTx)
         return false;
@@ -624,6 +626,7 @@ bool RH_RF22::available()
 
     if (!_rxBufValid)
     {
+        printf(" - RXBUF NOT VALID - ");
         if (_mode == RHModeTx)
             return false;
         setModeRx(); // Make sure we are receiving
