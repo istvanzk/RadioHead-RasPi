@@ -326,7 +326,7 @@ void RH_INTERRUPT_ATTR RH_RF22::isr2()
 void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
-
+    len = 10;
     // May have already read one or more fragments
     // Get any remaining unread octets, based on the expected length
     // First make sure we dont overflow the buffer in the case of a stupid length
@@ -338,10 +338,9 @@ void RH_RF22::readFifo()
         _mode = RHModeIdle;
         printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
         clearRxBuf();
-        //return; // Hmmm receiver buffer overflow.
+        return; // Hmmm receiver buffer overflow.
     }
 
-    len = 10;
     spiBurstRead(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _bufLen, len - _bufLen);
     _rxHeaderTo = spiRead(RH_RF22_REG_47_RECEIVED_HEADER3);
     _rxHeaderFrom = spiRead(RH_RF22_REG_48_RECEIVED_HEADER2);
