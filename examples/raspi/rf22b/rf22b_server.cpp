@@ -60,7 +60,7 @@ void sig_handler(int sig)
   bcm2835_spi_end();
   bcm2835_close();
 
-  exit(sig);  
+  exit(sig);
 }
 
 //Main Function
@@ -115,11 +115,11 @@ int main (int argc, const char* argv[] )
     rf22.setFrequency(RF_FREQUENCY);
 
     // This is our Gateway ID
-    rf22.setThisAddress(RF_GATEWAY_ID);
-    rf22.setHeaderFrom(RF_GATEWAY_ID);
+    //rf22.setThisAddress(RF_GATEWAY_ID);
+    //rf22.setHeaderFrom(RF_GATEWAY_ID);
 
     // Where we're sending packet
-    rf22.setHeaderTo(RF_NODE_ID);
+    //rf22.setHeaderTo(RF_NODE_ID);
 
     printf("RF22B: Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with 0x%02X TxPw\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TXPOW);
 
