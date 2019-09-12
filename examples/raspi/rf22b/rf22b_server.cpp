@@ -146,8 +146,8 @@ int main (int argc, const char* argv[] )
       {
         // Now clear the eds flag by setting it to 1
         //bcm2835_gpio_set_eds(RF_IRQ_PIN);
-        //printf("BCM2835: Packet Received. Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
-        printf("BCM2835: Packet Received. LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
+        //printf("BCM2835: Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
+        printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
         if (rf22.available())
         {
@@ -167,9 +167,9 @@ int main (int argc, const char* argv[] )
           {
             printf("RF22B: Packet received, %02d bytes, from #%d to #%d, with %ddBm => '", len, from, to, rssi);
             printbuffer(buf, len);
-            printf("' ");
+            printf("'");
           } else
-            printf("RF22B: Packet receive failed");
+            printf("RF22B: Packet receive failed")
 
           printf("\n");
         }
