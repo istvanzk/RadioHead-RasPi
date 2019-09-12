@@ -109,8 +109,8 @@ bool RH_RF22::init()
     if (   _deviceType != RH_RF22_DEVICE_TYPE_RX_TRX
         && _deviceType != RH_RF22_DEVICE_TYPE_TX)
     {
-//	Serial.print("unknown device type: ");
-//	Serial.println(_deviceType);
+//  Serial.print("unknown device type: ");
+//  Serial.println(_deviceType);
         return false;
     }
 
@@ -240,42 +240,42 @@ void RH_RF22::handleInterrupt()
             restartTransmit();
         else if (_mode == RHModeRx)
             clearRxBuf();
-    //	Serial.println("IFFERROR");
+    //  Serial.println("IFFERROR");
     }
     // Caution, any delay here may cause a FF underflow or overflow
     if (_lastInterruptFlags[0] & RH_RF22_ITXFFAEM)
     {
         // See if more data has to be loaded into the Tx FIFO
         sendNextFragment();
-//	    Serial.println("ITXFFAEM");
+//      Serial.println("ITXFFAEM");
     }
     if (_lastInterruptFlags[0] & RH_RF22_IRXFFAFULL)
     {
         // Caution, any delay here may cause a FF overflow
         // Read some data from the Rx FIFO
         readNextFragment();
-//	    Serial.println("IRXFFAFULL");
+//      Serial.println("IRXFFAFULL");
     }
     if (_lastInterruptFlags[0] & RH_RF22_IEXT)
     {
         // This is not enabled by the base code, but users may want to enable it
         handleExternalInterrupt();
-//	    Serial.println("IEXT");
+//      Serial.println("IEXT");
     }
     if (_lastInterruptFlags[1] & RH_RF22_IWUT)
     {
         // This is not enabled by the base code, but users may want to enable it
         handleWakeupTimerInterrupt();
-//	    Serial.println("IWUT");
+//      Serial.println("IWUT");
     }
     if (_lastInterruptFlags[0] & RH_RF22_IPKSENT)
     {
-//	    Serial.println("IPKSENT");
+//      Serial.println("IPKSENT");
         _txGood++;
         // Transmission does not automatically clear the tx buffer.
         // Could retransmit if we wanted
         // RH_RF22 transitions automatically to Idle
-	_   mode = RHModeIdle;
+    _   mode = RHModeIdle;
     }
     if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
     {
@@ -291,7 +291,7 @@ void RH_RF22::handleInterrupt()
     }
     if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
     {
-//	    Serial.println("IPREAVAL");
+//      Serial.println("IPREAVAL");
         _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
         _lastPreambleTime = millis();
         resetRxFifo();
@@ -305,17 +305,17 @@ void RH_RF22::handleInterrupt()
 void RH_INTERRUPT_ATTR RH_RF22::isr0()
 {
     if (_deviceForInterrupt[0])
-	_deviceForInterrupt[0]->handleInterrupt();
+    _deviceForInterrupt[0]->handleInterrupt();
 }
 void RH_INTERRUPT_ATTR RH_RF22::isr1()
 {
     if (_deviceForInterrupt[1])
-	_deviceForInterrupt[1]->handleInterrupt();
+    _deviceForInterrupt[1]->handleInterrupt();
 }
 void RH_INTERRUPT_ATTR RH_RF22::isr2()
 {
     if (_deviceForInterrupt[2])
-	_deviceForInterrupt[2]->handleInterrupt();
+    _deviceForInterrupt[2]->handleInterrupt();
 }
 
 #endif
@@ -327,29 +327,30 @@ void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
 
-	// May have already read one or more fragments
-	// Get any remaining unread octets, based on the expected length
-	// First make sure we dont overflow the buffer in the case of a stupid length
-	// or partial bad receives
-	if (   len >  RH_RF22_MAX_MESSAGE_LEN
-	    || len < _bufLen)
-	{
-	    _rxBad++;
-	    _mode = RHModeIdle;
+    // May have already read one or more fragments
+    // Get any remaining unread octets, based on the expected length
+    // First make sure we dont overflow the buffer in the case of a stupid length
+    // or partial bad receives
+    if (len >  RH_RF22_MAX_MESSAGE_LEN ||
+        len < _bufLen)
+    {
+        _rxBad++;
+        _mode = RHModeIdle;
         printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
-	    clearRxBuf();
-	    return; // Hmmm receiver buffer overflow.
-	}
+        clearRxBuf();
+        //return; // Hmmm receiver buffer overflow.
+    }
 
-	spiBurstRead(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _bufLen, len - _bufLen);
-	_rxHeaderTo = spiRead(RH_RF22_REG_47_RECEIVED_HEADER3);
-	_rxHeaderFrom = spiRead(RH_RF22_REG_48_RECEIVED_HEADER2);
-	_rxHeaderId = spiRead(RH_RF22_REG_49_RECEIVED_HEADER1);
-	_rxHeaderFlags = spiRead(RH_RF22_REG_4A_RECEIVED_HEADER0);
+    len = 10;
+    spiBurstRead(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _bufLen, len - _bufLen);
+    _rxHeaderTo = spiRead(RH_RF22_REG_47_RECEIVED_HEADER3);
+    _rxHeaderFrom = spiRead(RH_RF22_REG_48_RECEIVED_HEADER2);
+    _rxHeaderId = spiRead(RH_RF22_REG_49_RECEIVED_HEADER1);
+    _rxHeaderFlags = spiRead(RH_RF22_REG_4A_RECEIVED_HEADER0);
 
     if (_promiscuous ||
-	_rxHeaderTo == _thisAddress ||
-	_rxHeaderTo == RH_BROADCAST_ADDRESS)
+        _rxHeaderTo == _thisAddress ||
+        _rxHeaderTo == RH_BROADCAST_ADDRESS)
     {
         _bufLen = len;
         _rxGood++;
@@ -385,7 +386,7 @@ uint8_t RH_RF22::adcRead(uint8_t adcsel,
     // Conversion time is nominally 305usec
     // Wait for the DONE bit
     while (!(spiRead(RH_RF22_REG_0F_ADC_CONFIGURATION) & RH_RF22_ADCDONE))
-	;
+    ;
     // Return the value
     return spiRead(RH_RF22_REG_11_ADC_VALUE);
 }
@@ -423,20 +424,20 @@ bool RH_RF22::setFrequency(float centre, float afcPullInRange)
     uint8_t fbsel = RH_RF22_SBSEL;
     uint8_t afclimiter;
     if (centre < 240.0 || centre > 960.0) // 930.0 for early silicon
-	return false;
+    return false;
     if (centre >= 480.0)
     {
-	if (afcPullInRange < 0.0 || afcPullInRange > 0.318750)
-	    return false;
-	centre /= 2;
-	fbsel |= RH_RF22_HBSEL;
-	afclimiter = afcPullInRange * 1000000.0 / 1250.0;
+    if (afcPullInRange < 0.0 || afcPullInRange > 0.318750)
+        return false;
+    centre /= 2;
+    fbsel |= RH_RF22_HBSEL;
+    afclimiter = afcPullInRange * 1000000.0 / 1250.0;
     }
     else
     {
-	if (afcPullInRange < 0.0 || afcPullInRange > 0.159375)
-	    return false;
-	afclimiter = afcPullInRange * 1000000.0 / 625.0;
+    if (afcPullInRange < 0.0 || afcPullInRange > 0.159375)
+        return false;
+    afclimiter = afcPullInRange * 1000000.0 / 625.0;
     }
     centre /= 10.0;
     float integerPart = floor(centre);
@@ -489,8 +490,8 @@ void RH_RF22::setModeIdle()
 {
     if (_mode != RHModeIdle)
     {
-	setOpMode(_idleMode);
-	_mode = RHModeIdle;
+    setOpMode(_idleMode);
+    _mode = RHModeIdle;
     }
 }
 
@@ -498,8 +499,8 @@ bool RH_RF22::sleep()
 {
     if (_mode != RHModeSleep)
     {
-	setOpMode(0);
-	_mode = RHModeSleep;
+    setOpMode(0);
+    _mode = RHModeSleep;
     }
     return true;
 }
@@ -508,8 +509,8 @@ void RH_RF22::setModeRx()
 {
     if (_mode != RHModeRx)
     {
-	setOpMode(_idleMode | RH_RF22_RXON);
-	_mode = RHModeRx;
+    setOpMode(_idleMode | RH_RF22_RXON);
+    _mode = RHModeRx;
     }
 }
 
@@ -517,12 +518,12 @@ void RH_RF22::setModeTx()
 {
     if (_mode != RHModeTx)
     {
-	setOpMode(_idleMode | RH_RF22_TXON);
-	// Hmmm, if you dont clear the RX FIFO here, then it appears that going
-	// to transmit mode in the middle of a receive can corrupt the
-	// RX FIFO
-	resetRxFifo();
-	_mode = RHModeTx;
+    setOpMode(_idleMode | RH_RF22_TXON);
+    // Hmmm, if you dont clear the RX FIFO here, then it appears that going
+    // to transmit mode in the middle of a receive can corrupt the
+    // RX FIFO
+    resetRxFifo();
+    _mode = RHModeTx;
     }
 }
 
@@ -626,12 +627,12 @@ bool RH_RF22::available()
 
     if (!_rxBufValid)
     {
-        printf(" - RXBUF NOT VALID - ");
+        printf(" - RXBUF NOT VALID - \n");
         if (_mode == RHModeTx)
             return false;
         setModeRx(); // Make sure we are receiving
     } else
-        printf(" - RXBUF VALID - ");
+        printf(" - RXBUF VALID - \n");
 
     return _rxBufValid;
 }
@@ -674,7 +675,7 @@ void RH_RF22::restartTransmit()
 {
     _mode = RHModeIdle;
     _txBufSentIndex = 0;
-//	    Serial.println("Restart");
+//      Serial.println("Restart");
     startTransmit();
 }
 
@@ -752,14 +753,14 @@ void RH_RF22::sendNextFragment()
 {
     if (_txBufSentIndex < _bufLen)
     {
-	// Some left to send?
-	uint8_t len = _bufLen - _txBufSentIndex;
-	// But dont send too much
-	if (len > (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1))
-	    len = (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1);
-	spiBurstWrite(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _txBufSentIndex, len);
-//	printBuffer("frag:", _buf  + _txBufSentIndex, len);
-	_txBufSentIndex += len;
+    // Some left to send?
+    uint8_t len = _bufLen - _txBufSentIndex;
+    // But dont send too much
+    if (len > (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1))
+        len = (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1);
+    spiBurstWrite(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _txBufSentIndex, len);
+//  printBuffer("frag:", _buf  + _txBufSentIndex, len);
+    _txBufSentIndex += len;
     }
 }
 
@@ -768,7 +769,7 @@ void RH_RF22::sendNextFragment()
 void RH_RF22::readNextFragment()
 {
     if (((uint16_t)_bufLen + RH_RF22_RXFFAFULL_THRESHOLD) > RH_RF22_MAX_MESSAGE_LEN)
-	return; // Hmmm receiver overflow. Should never occur
+    return; // Hmmm receiver overflow. Should never occur
 
     // Read the RH_RF22_RXFFAFULL_THRESHOLD octets that should be there
     spiBurstRead(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _bufLen, RH_RF22_RXFFAFULL_THRESHOLD);
@@ -820,13 +821,13 @@ void RH_RF22::setPromiscuous(bool promiscuous)
 bool RH_RF22::setCRCPolynomial(CRCPolynomial polynomial)
 {
     if (polynomial >= CRC_CCITT &&
-	polynomial <= CRC_Biacheva)
+    polynomial <= CRC_Biacheva)
     {
-	_polynomial = polynomial;
-	return true;
+    _polynomial = polynomial;
+    return true;
     }
     else
-	return false;
+    return false;
 }
 
 uint8_t RH_RF22::maxMessageLength()
@@ -852,14 +853,14 @@ void RH_RF22::setGpioReversed(bool gpioReversed)
     // This assumes GPIO1(out) is connected to RX_ANT(in) to enable rx antenna during receive
     if (gpioReversed)
     {
-	// Reversed for HAB-RFM22B-BOA HAB-RFM22B-BO, also Si4432 sold by Dorji.com via Tindie.com.
-	spiWrite(RH_RF22_REG_0B_GPIO_CONFIGURATION0, 0x15) ; // RX state
-	spiWrite(RH_RF22_REG_0C_GPIO_CONFIGURATION1, 0x12) ; // TX state
+    // Reversed for HAB-RFM22B-BOA HAB-RFM22B-BO, also Si4432 sold by Dorji.com via Tindie.com.
+    spiWrite(RH_RF22_REG_0B_GPIO_CONFIGURATION0, 0x15) ; // RX state
+    spiWrite(RH_RF22_REG_0C_GPIO_CONFIGURATION1, 0x12) ; // TX state
     }
     else
     {
-	spiWrite(RH_RF22_REG_0B_GPIO_CONFIGURATION0, 0x12) ; // TX state
-	spiWrite(RH_RF22_REG_0C_GPIO_CONFIGURATION1, 0x15) ; // RX state
+    spiWrite(RH_RF22_REG_0B_GPIO_CONFIGURATION0, 0x12) ; // TX state
+    spiWrite(RH_RF22_REG_0C_GPIO_CONFIGURATION1, 0x15) ; // RX state
     }
 }
 
