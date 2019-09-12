@@ -169,7 +169,7 @@ int main (int argc, const char* argv[] )
             printbuffer(buf, len);
             printf("'");
           } else
-            printf("RF22B: Packet receive failed")
+            printf("RF22B: Packet receive failed");
 
           printf("\n");
         }
