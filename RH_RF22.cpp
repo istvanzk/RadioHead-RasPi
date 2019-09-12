@@ -617,8 +617,8 @@ bool RH_RF22::available()
         {
             _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
             _lastPreambleTime = millis();
-            clearRxBuf();
-            resetRxFifo();
+            //clearRxBuf();
+            //resetRxFifo();
             printf(" - PRE VALID - ");
         }
     }
@@ -638,8 +638,11 @@ bool RH_RF22::available()
 
 bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
 {
-    //if (!available())
-    //    return false;
+
+#ifndef RH_RF22_IRQLESS
+    if (!available())
+        return false;
+#endif
 
     if (buf && len)
     {
@@ -650,7 +653,6 @@ bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
         ATOMIC_BLOCK_END;
     }
     clearRxBuf();
-    //setModeRx();
     return true;
 }
 
