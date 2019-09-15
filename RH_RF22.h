@@ -339,6 +339,10 @@
 #define RH_RF22_SYNCLEN_4                          0x06
 #define RH_RF22_PREALEN8                           0x01
 
+// RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1      0x35
+#define RH_RF22_PREATH                             0xF8
+#define RH_RF22_RSSI_OFF                           0x07
+
 // RH_RF22_REG_6D_TX_POWER                         0x6d
 // https://www.sparkfun.com/datasheets/Wireless/General/RFM22B.pdf
 #define RH_RF22_PAPEAKVAL                          0x80
@@ -719,7 +723,7 @@
 /// \par Connecting RFM-22 to a Raspberry PI (V2)
 ///
 /// There is no dedicated IRQ input on the GPIO. One can use any of the 'free' GPIO pins to detect falling/rising edge signals on it
-/// using the BCM2835 library functions bcm2835_gpio_set_pud, bcm2835_gpio_sets_eds, bcm2835_gpio_fen, and bcm2835_gpio_eds.
+/// using the BCM2835 library functions bcm2835_gpio_lev or bcm2835_gpio_set_pud, bcm2835_gpio_sets_eds, bcm2835_gpio_fen, and bcm2835_gpio_eds.
 /// See http://www.airspayce.com/mikem/bcm2835/ for details, and some examples in RadioHead/examples/raspi/rf22b.
 /// To connect a Raspberry Pi (V2) to a RFM22B module (https://www.sparkfun.com/products/12030) connect the pins like this:
 ///\code
