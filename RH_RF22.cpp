@@ -121,7 +121,7 @@ bool RH_RF22::init()
 #else
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
 #endif
-    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
+    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL | RH_RF22_ENSWDET);
 
 
 #ifndef RH_RF22_IRQLESS
@@ -275,7 +275,7 @@ void RH_RF22::handleInterrupt()
         // Transmission does not automatically clear the tx buffer.
         // Could retransmit if we wanted
         // RH_RF22 transitions automatically to Idle
-    _   mode = RHModeIdle;
+        _mode = RHModeIdle;
     }
     if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
     {
@@ -600,6 +600,20 @@ bool RH_RF22::available()
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
             readFifo();
 
+        // Read RSSI
+        if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
+        {
+            _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
+            _lastPreambleTime = millis();
+            //clearRxBuf();
+            //resetRxFifo();
+            printf(" - PRE VALID - ");
+        }
+
+        // Check SYNC
+        if(_lastInterruptFlags[1] & RH_RF22_ISWDET)
+           printf(" - SYNC OK - ");
+
         // Check CRC
         if (_lastInterruptFlags[0] & RH_RF22_ICRCERROR)
         {
@@ -611,15 +625,7 @@ bool RH_RF22::available()
             printf(" - CRC ERROR - ");
         }
 
-        // Read RSSI
-        if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
-        {
-            _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
-            _lastPreambleTime = millis();
-            //clearRxBuf();
-            //resetRxFifo();
-            printf(" - PRE VALID - ");
-        }
+
     }
 #endif
 
