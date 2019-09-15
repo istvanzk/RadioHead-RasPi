@@ -341,7 +341,17 @@
 
 // RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1      0x35
 #define RH_RF22_PREATH                             0xF8
-#define RH_RF22_RSSI_OFF                           0x07
+#define RH_RF22_PREATH_8BIT                        0x10
+#define RH_RF22_PREATH_20BIT                       0x28
+#define RH_RF22_RSSI_OFF_0DB                       0x00
+#define RH_RF22_RSSI_OFF_4DB                       0x01
+#define RH_RF22_RSSI_OFF_8DB                       0x02
+#define RH_RF22_RSSI_OFF_12DB                      0x03
+#define RH_RF22_RSSI_OFF_16DB                      0x04
+#define RH_RF22_RSSI_OFF_20DB                      0x05
+#define RH_RF22_RSSI_OFF_24DB                      0x06
+#define RH_RF22_RSSI_OFF_28DB                      0x07
+
 
 // RH_RF22_REG_6D_TX_POWER                         0x6d
 // https://www.sparkfun.com/datasheets/Wireless/General/RFM22B.pdf

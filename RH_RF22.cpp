@@ -562,14 +562,13 @@ bool RH_RF22::setModemConfig(ModemConfigChoice index)
 void RH_RF22::setPreambleLength(uint8_t nibbles)
 {
     spiWrite(RH_RF22_REG_34_PREAMBLE_LENGTH, nibbles);
-    spiWrite(RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1, (3<<5) & RH_RF22_PREATH);
+    spiWrite(RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1, RH_RF22_PREATH_20BIT | RH_RF22_RSSI_OFF_4DB);
 }
 
-// Caution: it does set sync word len in Header Control 2 0x33
+// Caution: does not set sync word len in Header Control 2 0x33
 void RH_RF22::setSyncWords(const uint8_t* syncWords, uint8_t len)
 {
     spiBurstWrite(RH_RF22_REG_36_SYNC_WORD3, syncWords, len);
-    spiWrite(RH_RF22_REG_33_HEADER_CONTROL2, (1<<(len-1)) & RH_RF22_SYNCLEN);
 }
 
 void RH_RF22::clearRxBuf()
