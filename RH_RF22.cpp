@@ -562,7 +562,7 @@ bool RH_RF22::setModemConfig(ModemConfigChoice index)
 void RH_RF22::setPreambleLength(uint8_t nibbles)
 {
     spiWrite(RH_RF22_REG_34_PREAMBLE_LENGTH, nibbles);
-    spiWrite(RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1, (3<<20) & RH_RF22_PREATH);
+    spiWrite(RH_RF22_REG_35_PREAMBLE_DETECTION_CONTROL1, (3<<5) & RH_RF22_PREATH);
 }
 
 // Caution: it does set sync word len in Header Control 2 0x33
