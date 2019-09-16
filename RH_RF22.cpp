@@ -101,7 +101,7 @@ bool RH_RF22::init()
     //spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
     // Wait for chip ready
     while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
-        YIELD;
+    ;
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
