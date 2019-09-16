@@ -605,14 +605,18 @@ bool RH_RF22::available()
         {
             _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
             _lastPreambleTime = millis();
-            clearRxBuf();
-            resetRxFifo();
+            //clearRxBuf();
+            //resetRxFifo();
             printf(" - PRE VALID %ddBm - ", _lastRssi);
         }
 
         // Check SYNC
         if(_lastInterruptFlags[1] & RH_RF22_ISWDET)
            printf(" - SYNC OK - ");
+
+        // Save msg in our buffer _buf with length _bufLen
+        //if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+            readFifo();
 
         // Check CRC
         if (_lastInterruptFlags[0] & RH_RF22_ICRCERROR)
@@ -625,9 +629,6 @@ bool RH_RF22::available()
             printf(" - CRC ERROR - ");
         }
 
-        // Save msg in our buffer _buf with length _bufLen
-        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
-            readFifo();
 
     }
 #endif
