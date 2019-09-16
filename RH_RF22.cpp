@@ -117,13 +117,13 @@ bool RH_RF22::init()
 
     // Enable interrupt output on the radio. Interrupt line will now go high until
     // an interrupt occurs
-#ifndef RH_RF22_IRQLESS
+//#ifndef RH_RF22_IRQLESS
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
-    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
-#else
-    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
+//    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
+//#else
+//    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
     spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL | RH_RF22_ENSWDET);
-#endif
+//#endif
 
 
 
@@ -621,6 +621,13 @@ bool RH_RF22::available()
             printf(" - SYNC ERROR - ");
         } else
            printf(" - SYNC OK - ");
+
+        if (_lastInterruptFlags[0] & RH_RF22_IRXFFAFULL)
+        {
+            // Caution, any delay here may cause a FF overflow
+            // Read some data from the Rx FIFO
+            readNextFragment();
+        }
 
         // Save msg in our buffer _buf with length _bufLen
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
