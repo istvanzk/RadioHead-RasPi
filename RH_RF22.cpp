@@ -97,11 +97,6 @@ bool RH_RF22::init()
 
     // Software reset the device
     //reset();
-    // Issue software reset to get all registers to default state
-    spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
-    // Wait for chip ready
-    while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
-    ;
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
@@ -113,6 +108,12 @@ bool RH_RF22::init()
 //  Serial.println(_deviceType);
         return false;
     }
+
+    // Issue software reset to get all registers to default state
+    spiWrite(RH_RF22_REG_07_OPERATING_MODE1, RH_RF22_SWRES);
+    // Wait for chip ready
+    while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
+    ;
 
     // Enable interrupt output on the radio. Interrupt line will now go high until
     // an interrupt occurs
