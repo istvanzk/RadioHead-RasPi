@@ -359,9 +359,9 @@ void RH_RF22::readFifo()
         _rxGood++;
         _mode = RHModeIdle;
         _rxBufValid = true;
-        printf(" - RXBUF VALID - ");
+        printf(" - RXBUF VALID 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
     } else
-        printf(" - RXBUF IGNOR - ");
+        printf(" - RXBUF IGNOR 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
 }
 
 
