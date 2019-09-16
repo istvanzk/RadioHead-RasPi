@@ -662,6 +662,7 @@ bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
         ATOMIC_BLOCK_END;
     }
     clearRxBuf();
+    resetRxFifo();
     return true;
 }
 
