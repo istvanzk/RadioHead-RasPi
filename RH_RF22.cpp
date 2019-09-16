@@ -119,10 +119,12 @@ bool RH_RF22::init()
     // an interrupt occurs
 #ifndef RH_RF22_IRQLESS
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
+    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
 #else
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
-#endif
     spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL | RH_RF22_ENSWDET);
+#endif
+
 
 
 #ifndef RH_RF22_IRQLESS
@@ -609,7 +611,7 @@ bool RH_RF22::available()
             _lastPreambleTime = millis();
             //clearRxBuf();
             //resetRxFifo();
-            printf(" - PRE VALID - ");
+            printf(" - PRE VALID %ddBm - ", _lastRssi);
         }
 
         // Check SYNC
@@ -633,7 +635,7 @@ bool RH_RF22::available()
 
     if (!_rxBufValid)
     {
-        printf(" - RXBUF NOT VALID %d- \n", rxBad());
+        printf(" - RXBUF NOT VALID %d - \n", rxBad());
         if (_mode == RHModeTx)
             return false;
         setModeRx(); // Make sure we are receiving
