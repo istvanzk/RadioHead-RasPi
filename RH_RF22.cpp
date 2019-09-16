@@ -184,7 +184,7 @@ bool RH_RF22::init()
     spiWrite(RH_RF22_REG_32_HEADER_CONTROL1, RH_RF22_BCEN_HEADER3 | RH_RF22_HDCH_HEADER3);
     spiWrite(RH_RF22_REG_33_HEADER_CONTROL2, RH_RF22_HDLEN_4 | RH_RF22_SYNCLEN_2);
 
-    setPreambleLength(8);
+    setPreambleLength(10);
     uint8_t syncwords[] = { 0x2d, 0xd4 };
     setSyncWords(syncwords, sizeof(syncwords));
     setPromiscuous(false);
