@@ -611,7 +611,15 @@ bool RH_RF22::available()
         }
 
         // Check SYNC
-        if(_lastInterruptFlags[1] & RH_RF22_ISWDET)
+        if(!(_lastInterruptFlags[1] & RH_RF22_ISWDET))
+        {
+            _rxBad++;
+            clearRxBuf();
+            resetRxFifo();
+            _mode = RHModeIdle;
+            setModeRx(); // Keep trying
+            printf(" - SYNC ERROR - ");
+        } else
            printf(" - SYNC OK - ");
 
         // Save msg in our buffer _buf with length _bufLen
@@ -627,7 +635,8 @@ bool RH_RF22::available()
             _mode = RHModeIdle;
             setModeRx(); // Keep trying
             printf(" - CRC ERROR - ");
-        }
+        } else
+           printf(" - CRC OK - ");
 
 
     }
