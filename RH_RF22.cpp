@@ -615,7 +615,7 @@ bool RH_RF22::available()
            printf(" - SYNC OK - ");
 
         // Save msg in our buffer _buf with length _bufLen
-        //if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
             readFifo();
 
         // Check CRC
