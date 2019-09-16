@@ -330,7 +330,7 @@ void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
     _rxBufValid = false;
-    len = 40;
+    len = 13;
     // May have already read one or more fragments
     // Get any remaining unread octets, based on the expected length
     // First make sure we dont overflow the buffer in the case of a stupid length
