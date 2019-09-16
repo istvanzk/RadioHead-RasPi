@@ -40,8 +40,8 @@
 #include "../RasPiBoards.h"
 
 // Our RFM22B Configuration
-#define RF_FREQUENCY  434.00
-#define RF_TXPOW      RH_RF22_TXPOW_11DBM
+#define RF_FREQUENCY  434.0
+#define RF_TXPOW      RH_RF22_TXPOW_1DBM
 #define RF_GROUP_ID   22 // All devices
 #define RF_GATEWAY_ID 1  // Server ID (where to send packets)
 #define RF_NODE_ID    10 // Client ID (device sending the packets)
@@ -112,7 +112,7 @@ int main (int argc, const char* argv[] )
     //rf22.setSyncWords(syncwords, sizeof(syncwords));
 
     // Adjust Frequency
-    rf22.setFrequency(RF_FREQUENCY);
+    //rf22.setFrequency(RF_FREQUENCY,0.05);
 
     // This is our Gateway ID
     //rf22.setThisAddress(RF_GATEWAY_ID);
@@ -177,9 +177,9 @@ int main (int argc, const char* argv[] )
       }
 
       // Let OS doing other tasks
-      // For timed critical appliation you can reduce or delete
+      // For timed critical application you can reduce or delete
       // this delay, but this will charge CPU usage, take care and monitor
-      delay(10);
+      delay(200);
     }
   }
 
