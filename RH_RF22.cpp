@@ -169,7 +169,7 @@ bool RH_RF22::init()
     spiWrite(RH_RF22_REG_7D_TX_FIFO_CONTROL2, RH_RF22_TXFFAEM_THRESHOLD);
     spiWrite(RH_RF22_REG_7E_RX_FIFO_CONTROL,  RH_RF22_RXFFAFULL_THRESHOLD);
     //spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
-    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
+    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_LSBFRST | RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
 
     // Configure the message headers
     // Here we set up the standard packet format for use by the RH_RF22 library
@@ -179,7 +179,7 @@ bool RH_RF22::init()
     // 1 octet of data length (0 to 255)
     // 0 to 255 octets data
     // 2 CRC octets as CRC16(IBM), computed on the header, length and data
-    // On reception the to address is check for validity against RH_RF22_REG_3F_CHECK_HEADER3
+    // On reception the to address is checked for validity against RH_RF22_REG_3F_CHECK_HEADER3
     // or the broadcast address of 0xff
     // If no changes are made after this, the transmitted
     // to address will be 0xff, the from address will be 0xff
