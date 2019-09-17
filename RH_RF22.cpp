@@ -168,7 +168,8 @@ bool RH_RF22::init()
     // Most of these are the POR default
     spiWrite(RH_RF22_REG_7D_TX_FIFO_CONTROL2, RH_RF22_TXFFAEM_THRESHOLD);
     spiWrite(RH_RF22_REG_7E_RX_FIFO_CONTROL,  RH_RF22_RXFFAFULL_THRESHOLD);
-    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
+    //spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
+    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
 
     // Configure the message headers
     // Here we set up the standard packet format for use by the RH_RF22 library
