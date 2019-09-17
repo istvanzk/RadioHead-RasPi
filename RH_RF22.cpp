@@ -330,7 +330,7 @@ void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
     _rxBufValid = false;
-    len = 13;
+    //len = 13;
     // May have already read one or more fragments
     // Get any remaining unread octets, based on the expected length
     // First make sure we dont overflow the buffer in the case of a stupid length
@@ -590,6 +590,10 @@ bool RH_RF22::available()
 
     if (_mode == RHModeRx)
     {
+        // EZMAC status
+        uint8_t _ezmacStatus = ezmacStatusRead();
+        printf("EZMAC= %02x\n", _ezmacStatus);
+
         // As we have not enabled IRQ, we need to check internal IRQ register of device
         // Read the interrupt flags, which then clears the enabled interrupt bits/flags
         // This code acts partly as an 'interrupt handler'

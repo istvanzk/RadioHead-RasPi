@@ -309,6 +309,15 @@
 #define RH_RF22_CRC_IEC_16                         0x02
 #define RH_RF22_CRC_BIACHEVA                       0x03
 
+// RH_RF22_REG_31_EZMAC_STATUS                     0x31
+#define RH_RF22_EZMAC_PKSENT                       0x01
+#define RH_RF22_EZMAC_PKTX                         0x02
+#define RH_RF22_EZMAC_CRCERROR                     0x04
+#define RH_RF22_EZMAC_PKVALID                      0x08
+#define RH_RF22_EZMAC_PKRX                         0x10
+#define RH_RF22_EZMAC_PKSRCH                       0x20
+#define RH_RF22_EZMAC_RXCRC1                       0x40
+
 // RH_RF22_REG_32_HEADER_CONTROL1                  0x32
 #define RH_RF22_BCEN                               0xf0
 #define RH_RF22_BCEN_NONE                          0x00
