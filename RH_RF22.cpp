@@ -333,7 +333,7 @@ void RH_RF22::readFifo()
 {
     uint8_t len = spiRead(RH_RF22_REG_4B_RECEIVED_PACKET_LENGTH);
     _rxBufValid = false;
-    //len = 13;
+
     // May have already read one or more fragments
     // Get any remaining unread octets, based on the expected length
     // First make sure we dont overflow the buffer in the case of a stupid length
@@ -593,19 +593,31 @@ bool RH_RF22::available()
 
     if (_mode == RHModeRx)
     {
-        // EZMAC status
-        uint8_t _ezmacStatus = ezmacStatusRead();
-        printf("EZMAC= %02x\n", _ezmacStatus);
-
         // As we have not enabled IRQ, we need to check internal IRQ register of device
         // Read the interrupt flags, which then clears the enabled interrupt bits/flags
         // This code acts partly as an 'interrupt handler'
         uint8_t _lastInterruptFlags[2];
         spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
 
-        //printf("STATUS1= %02x\nSTATUS2= %02x\n", _lastInterruptFlags[0], _lastInterruptFlags[1]);
-
         setModeIdle();
+
+        // Save msg in our buffer _buf with length _bufLen
+        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+            readFifo();
+
+        _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
+        _lastPreambleTime = millis();
+        printf(" - RSSI %ddBm - ", _lastRssi);
+
+#if 0
+        // DEVELOPER TESTING ONLY
+        // The corresponding interrup flags need to be enabled in init()
+
+        // Read EZMAC status
+        uint8_t _ezmacStatus = ezmacStatusRead();
+        printf("EZMAC= %02x\n", _ezmacStatus);
+
+        printf("STATUS1= %02x\nSTATUS2= %02x\n", _lastInterruptFlags[0], _lastInterruptFlags[1]);
 
         // Read RSSI
         if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
@@ -636,10 +648,6 @@ bool RH_RF22::available()
             readNextFragment();
         }
 
-        // Save msg in our buffer _buf with length _bufLen
-        if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
-            readFifo();
-
         // Check CRC
         if (_lastInterruptFlags[0] & RH_RF22_ICRCERROR)
         {
@@ -651,6 +659,7 @@ bool RH_RF22::available()
             printf(" - CRC ERROR - ");
         } else
            printf(" - CRC OK - ");
+#endif
 
 
     }
