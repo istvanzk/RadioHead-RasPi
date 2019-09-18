@@ -605,7 +605,7 @@ bool RH_RF22::available()
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
             readFifo();
 
-        _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
+        _lastRssi = (int8_t)(-120 + (((spiRead(RH_RF22_REG_26_RSSI) - 15) * 2/5)));
         _lastPreambleTime = millis();
         printf(" - RSSI %ddBm - ", _lastRssi);
 
