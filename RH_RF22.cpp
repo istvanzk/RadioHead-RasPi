@@ -117,13 +117,16 @@ bool RH_RF22::init()
 
     // Enable interrupt output on the radio. Interrupt line will now go high until
     // an interrupt occurs
-//#ifndef RH_RF22_IRQLESS
+    // When real IRQ is not used e.g. in Raspberry PI, then we need to enable only the most critical/relevant interrupt flags
+    // Otherwise, when reading one time per pooling loop the REG_03_INTERRUPT_STATUS1 not all relevant flags might be set!
+    // Alternatively (or additionally), the EZMAC register can be read to get some of the same flags
+#ifndef RH_RF22_IRQLESS
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
-//    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
-//#else
-//    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
-    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL | RH_RF22_ENSWDET);
-//#endif
+    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
+#else
+    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR);
+    //spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL | RH_RF22_ENSWDET);
+#endif
 
 
 
@@ -168,8 +171,7 @@ bool RH_RF22::init()
     // Most of these are the POR default
     spiWrite(RH_RF22_REG_7D_TX_FIFO_CONTROL2, RH_RF22_TXFFAEM_THRESHOLD);
     spiWrite(RH_RF22_REG_7E_RX_FIFO_CONTROL,  RH_RF22_RXFFAFULL_THRESHOLD);
-    //spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
-    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_LSBFRST | RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
+    spiWrite(RH_RF22_REG_30_DATA_ACCESS_CONTROL, RH_RF22_ENPACRX | RH_RF22_ENPACTX | RH_RF22_ENCRC | (_polynomial & RH_RF22_CRC));
 
     // Configure the message headers
     // Here we set up the standard packet format for use by the RH_RF22 library
