@@ -1,7 +1,7 @@
 RadioHead Packet Radio library for embedded microprocessors - Fork for RFM22B support on Raspberry PI
 ====================================================================================================
 
-### Features added with this fork, August-September 2019. NOT TESTED YET!
+### Features added with this fork, August-September 2019.
 
 This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry PI support of the original [RadioHead Packet Radio library][3] for embedded microprocessors by Mike McCauley. The [RadioHead Packet Radio library][3] provides a complete object-oriented library for sending and receiving packetized messages via a variety of common data radios and other transports on a range of embedded microprocessors.
 
@@ -71,43 +71,6 @@ In your code, you need to define RFM22B board used and then, include the file de
 #ifdef RF_IRQ_PIN
 // Blah blah ....
 #endif
-
-```
-Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_client and then run it:
-```shell
-$ cd RadioHead/examples/raspi/rf22b
-$ make rf22b_client
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"rf22b_client\" -c -I../../.. rf22b_client.cpp
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RH_RF22\" -c -I../../.. ../../../RH_RF22.cpp
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RasPi\" -c ../../../RHutil/RasPi.cpp -I../../..
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHHardwareSPI\" -c -I../../.. ../../../RHHardwareSPI.cpp
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericDriver\" -c -I../../.. ../../../RHGenericDriver.cpp
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericSPI\" -c -I../../.. ../../../RHGenericSPI.cpp
-g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHSPIDriver\" -c -I../../.. ../../../RHSPIDriver.cpp
-g++ rf22b_client.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o -lbcm2835 -o rf22b_client
-$ sudo ./rf22b_client
-```
-
-In case of an intialisation error of the RF22B board:
-```shell
-rf22b_client
-
-RF22B module init failed, Please verify wiring/module
-RF22B CS=GPIO8, IRQ=GPIO25
-rf22b_client Ending
-```
-
-When wiring/ module is OK, then:
-```shell
-rf22b_client
-
-RF22B CS=GPIO8, IRQ=GPIO25
-RF22B module seen OK!
-RF22 Group ...
-Sending...
-Packet received ...
-
-rf22b_client Ending
 ```
 
 **The spi_scan example**
@@ -125,13 +88,101 @@ Checking register(0x01) with CS=GPIO06 => Nothing!
 Checking register(0x42) with CS=GPIO08 => Nothing!
 Checking register(0x10) with CS=GPIO08 => Nothing!
 Checking register(0x01) with CS=GPIO08 => RFM22B (V=0x06)
-Checking register(0x42) with CS=GPIO07 => Nothing!
-Checking register(0x10) with CS=GPIO07 => Nothing!
-Checking register(0x01) with CS=GPIO07 => Nothing!
-Checking register(0x42) with CS=GPIO26 => Nothing!
-Checking register(0x10) with CS=GPIO26 => Nothing!
-Checking register(0x01) with CS=GPIO26 => Nothing!
 ```
+
+**The rf22b_client example**
+
+Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_client and then run it:
+```shell
+$ cd RadioHead/examples/raspi/rf22b
+$ make rf22b_client
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"rf22b_client\" -c -I../../.. rf22b_client.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RH_RF22\" -c -I../../.. ../../../RH_RF22.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RasPi\" -c ../../../RHutil/RasPi.cpp -I../../..
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHHardwareSPI\" -c -I../../.. ../../../RHHardwareSPI.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericDriver\" -c -I../../.. ../../../RHGenericDriver.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericSPI\" -c -I../../.. ../../../RHGenericSPI.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHSPIDriver\" -c -I../../.. ../../../RHSPIDriver.cpp
+g++ rf22b_client.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o -lbcm2835 -o rf22b_client
+$ sudo ./rf22b_client
+```
+
+In case of intialisation error of the RF22B board:
+```shell
+rf22b_client started
+
+RF22B module init failed, Please verify wiring/module
+RF22B CS=GPIO8, IRQ=GPIO25
+rf22b_client Ending
+```
+
+When wiring/ module is OK, then:
+```shell
+rf22b_client started
+RF22B: Module seen OK. Using: CS=GPIO8, IRQ=GPIO25
+RF22B: Group #22, Node #10 to GW #1 init OK @ 434.00MHz with 0x04 TxPw
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+RF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'  : Sent OK!
+
+
+^CRF22B: Sending 10 bytes to GW #1 => 'Hi Raspi!'
+rf22b_client Interrupt signal (2) received. Exiting!
+```
+
+**The rf22b_server example**
+
+Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_server and then run it:
+```shell
+$ cd RadioHead/examples/raspi/rf22b
+$ make rf22b_server
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"rf22b_server\" -c -I../../.. rf22b_server.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RH_RF22\" -c -I../../.. ../../../RH_RF22.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RasPi\" -c ../../../RHutil/RasPi.cpp -I../../..
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHHardwareSPI\" -c -I../../.. ../../../RHHardwareSPI.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericDriver\" -c -I../../.. ../../../RHGenericDriver.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHGenericSPI\" -c -I../../.. ../../../RHGenericSPI.cpp
+g++ -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"RHSPIDriver\" -c -I../../.. ../../../RHSPIDriver.cpp
+g++ rf22b_server.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o -lbcm2835 -o rf22b_server
+$ sudo ./rf22b_server
+```
+
+With the default RH22 client running (examples/rf22/rf22_client.pde)
+When wiring/ module is OK, then:
+```shell
+rf22b_server started
+RF22B: Module seen OK. Using: CS=GPIO8, IRQ=GPIO25
+ - RXBUF NOT VALID 0 -
+RF22B: Group #22, GW #1 to Node #10 init OK @ 434.00MHz with 0x00 TxPw
+	Listening ...
+BCM2835: LOW detected for pin GPIO25
+ - RXBUF VALID 0xFF => 0xFF -  - RSSI -126dBm -  - RXBUF VALID 1 -
+RF22B: Received packet available
+RF22B: Packet received, 13 bytes, from #255 to #255, with -126dBm => 'Hello World!'
+BCM2835: LOW detected for pin GPIO25
+ - RXBUF VALID 0xFF => 0xFF -  - RSSI -126dBm -  - RXBUF VALID 2 -
+RF22B: Received packet available
+RF22B: Packet received, 13 bytes, from #255 to #255, with -126dBm => 'Hello World!'
+BCM2835: LOW detected for pin GPIO25
+ - RXBUF VALID 0xFF => 0xFF -  - RSSI -126dBm -  - RXBUF VALID 3 -
+RF22B: Received packet available
+RF22B: Packet received, 13 bytes, from #255 to #255, with -126dBm => 'Hello World!'
+
+^C
+rf22b_server Interrupt signal (2) received. Exiting!
+```
+
+Note: The RSSI readings are not very reliable.
 
 
 #### Packet Format for RF22B based radio modules
@@ -143,6 +194,10 @@ All messages sent and received by this Driver must conform to this packet format
 - 1 octet LENGTH (0 to 255), number of octets in DATA
 - 0 to 255 octets DATA
 - 2 octets CRC computed with CRC16(IBM), computed on HEADER, LENGTH and DATA
+On reception the, TO address is checked for validity against RH_RF22_REG_3F_CHECK_HEADER3 or the broadcast address of 0xff.
+In the default setup the transmitted TO address will be 0xff, the FROM address will be 0xff.
+and all such messages will be accepted.
+These setting permit the out-of the box RH_RF22 config to act as an unaddresed, unreliable datagram service.
 
 For technical reasons, the message format is not protocol compatible with the
 'HopeRF Radio Transceiver Message Library for Arduino' http://www.airspayce.com/mikem/arduino/HopeRF from the same author. Nor is it compatible with
