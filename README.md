@@ -11,7 +11,7 @@ This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry P
 **Compatible boards**
 
 - Kept compatibility with RF69 and RF95 based radio modules on Raspberry PI - See original fork by [Charles-Henri Hallard][1].
-- Added compatibility with RFM22B based radio modules on Raspberry PI. NOT TESTED YET!
+- Added compatibility with RFM22B based radio modules on Raspberry PI.
   - Sample code for Raspberry Pi for HopeRF RFM22B based radio modules, e.g. [RFM22B][4], in a new [RadioHead/examples/raspi/rf22b][5] folder.
   - Based on sample code for RFM69HCW on Raspberry Pi by [Charles-Henri Hallard][1] and sample code for RF24 on Arduino by [Mike McCauley][3].
 
