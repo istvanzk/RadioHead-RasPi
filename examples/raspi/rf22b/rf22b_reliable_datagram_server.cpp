@@ -89,8 +89,8 @@ int main (int argc, const char* argv[] )
   } else {
     printf( "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
-   // Since we may check IRQ line with bcm_2835 Falling edge detection
-    // In case radio already have a packet, IRQ is low and will never
+    // Since we may check IRQ line with bcm_2835 level detection
+    // in case radio already have a packet, IRQ is low and will never
     // go to high so never fire again
     // Except if we clear IRQ flags and discard one if any by checking
     manager.available();
@@ -104,11 +104,11 @@ int main (int argc, const char* argv[] )
     rf22.setTxPower(RF_TX_DBM);
 
     // set Network ID (by sync words)
-    //uint8_t syncwords[2];
-    //syncwords[0] = 0x2d;
-    //syncwords[1] = RF_GROUP_ID;
+    uint8_t syncwords[2];
+    syncwords[0] = 0x2d;
+    syncwords[1] = 0xd4; //RF_GROUP_ID;
     // NOT available in RHDatagram
-    //rf22.setSyncWords(syncwords, sizeof(syncwords));
+    rf22.setSyncWords(syncwords, sizeof(syncwords));
 
     // Adjust Frequency
     // NOT available in RHDatagram
@@ -116,7 +116,7 @@ int main (int argc, const char* argv[] )
 
     // This is our Gateway ID
     manager.setThisAddress(RF_GATEWAY_ID);
-    //rf22.setHeaderFrom(RF_GATEWAY_ID);
+    manager.setHeaderFrom(RF_GATEWAY_ID);
 
     // Where we're sending packet
     manager.setHeaderTo(RF_NODE_ID);
@@ -136,7 +136,8 @@ int main (int argc, const char* argv[] )
     printf( "\tListening ...\n" );
 
     //Begin the main body of code
-    while (!force_exit) {
+    while (!force_exit)
+    {
 
       // We have a IRQ pin ,pool it instead reading
       // Modules IRQ registers from SPI in each loop
@@ -152,7 +153,7 @@ int main (int argc, const char* argv[] )
             // Wait for a message addressed to us from the client
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
             uint8_t len = sizeof(buf);
-            uint8_t from;
+            uint8_t from; // = rf22.headerFrom();
 	        uint8_t to   = rf22.headerTo();
             int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAck(buf, &len, &from))
