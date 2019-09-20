@@ -155,10 +155,12 @@ int main (int argc, const char* argv[] )
             uint8_t len = sizeof(buf);
             uint8_t from; // = rf22.headerFrom();
 	        uint8_t to   = rf22.headerTo();
+            uint8_t id;   // = rf22.headerId();
+            uint8_t flags; //= rf22.headerFlags();
             int8_t rssi  = rf22.lastRssi();
-            if (manager.recvfromAck(buf, &len, &from))
+            if (manager.recvfromAck(buf, &len, &from, &id, &flags))
             {
-                printf("RF22B: Packet received, %02d bytes, from #%d to #%d, with %ddBm => '", len, from, to, rssi);
+                printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x02X, F: 0x02x, with %ddBm => '", len, from, to, rssi, id, flags);
                 printbuffer(buf, len);
                 printf("'");
             } else {
