@@ -139,7 +139,7 @@ bool RHReliableDatagram::recvfromAck(uint8_t* buf, uint8_t* len, uint8_t* from, 
 #if (RH_PLATFORM == RH_PLATFORM_RASPI)
     // Pooling of nIRQ is used instead of a real interrupt service/handler
     // I.e. available() has been already called and the RX fifo buffer was checked & read (see e.g. RH_RF22B)
-    if recvfrom(buf, len, &_from, &_to, &_id, &_flags)
+    if (recvfrom(buf, len, &_from, &_to, &_id, &_flags))
 #else
     if (available() && recvfrom(buf, len, &_from, &_to, &_id, &_flags))
 #endif
