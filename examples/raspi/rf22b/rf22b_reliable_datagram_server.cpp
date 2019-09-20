@@ -85,9 +85,9 @@ int main (int argc, const char* argv[] )
 
 
   if (!manager.init()) {
-    fprintf( stderr, "\nRF22B: Module init() failed. Please verify wiring/module\n" );
+    fprintf( stderr, "\nRF22B RD: Module init() failed. Please verify wiring/module\n" );
   } else {
-    printf( "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
+    printf( "RF22B RD: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
     // Since we may check IRQ line with bcm_2835 level detection
     // in case radio already have a packet, IRQ is low and will never
@@ -148,7 +148,7 @@ int main (int argc, const char* argv[] )
         /* Begin Reliable Datagram Code */
         if (manager.available())
         {
-            printf("RF22B: Received packet available\n");
+            printf("RF22B RD: Received packet available\n");
 
             // Wait for a message addressed to us from the client
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
@@ -158,12 +158,14 @@ int main (int argc, const char* argv[] )
             int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAck(buf, &len, &from))
             {
-                printf("RF22B RD: Packet received [%02d] #%d => #%d, with %ddBm: ", len, from, to, rssi);
+                printf("RF22B: Packet received, %02d bytes, from #%d to #%d, with %ddBm => '", len, from, to, rssi);
                 printbuffer(buf, len);
+                printf("'");
             } else {
                 printf("RF22B RD: Packet receive failed\n");
             }
             printf("\n");
+            rf22.setModeRx();
         }
         /* End Reliable Datagram Code */
 
