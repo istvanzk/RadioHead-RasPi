@@ -133,6 +133,13 @@ int main (int argc, const char* argv[] )
     // NOT available in RHDatagram
     rf22.setModeRx();
 
+    uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
+    uint8_t len = sizeof(buf);
+    uint8_t from;  // = rf22.headerFrom();
+    uint8_t to;    // = rf22.headerTo();
+    uint8_t id;    // = rf22.headerId();
+    uint8_t flags; // = rf22.headerFlags();
+
     printf( "\tListening ...\n" );
 
     //Begin the main body of code
@@ -151,14 +158,8 @@ int main (int argc, const char* argv[] )
             printf("RF22B RD: Received packet available\n");
 
             // Wait for a message addressed to us from the client
-            uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-            uint8_t len = sizeof(buf);
-            uint8_t from; // = rf22.headerFrom();
-	        uint8_t to   = rf22.headerTo();
-            uint8_t id;   // = rf22.headerId();
-            uint8_t flags; //= rf22.headerFlags();
             int8_t rssi  = rf22.lastRssi();
-            if (manager.recvfromAck(buf, &len, &from, &id, &flags))
+            if (manager.recvfromAck(buf, &len, &from, &to, &id, &flags))
             {
                 printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, rssi, id, flags);
                 printbuffer(buf, len);
