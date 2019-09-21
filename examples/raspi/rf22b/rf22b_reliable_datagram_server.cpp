@@ -161,7 +161,7 @@ int main (int argc, const char* argv[] )
             int8_t rssi  = rf22.lastRssi();
             if (manager.recvfromAck(buf, &len, &from, &to, &id, &flags))
             {
-                printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, rssi, id, flags);
+                printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
                 printbuffer(buf, len);
                 printf("'");
             } else {
