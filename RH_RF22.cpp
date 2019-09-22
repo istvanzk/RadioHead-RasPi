@@ -700,6 +700,7 @@ bool RH_RF22::recvfrom(uint8_t* buf, uint8_t* len, uint8_t* from, uint8_t* to, u
 {
     if (recv(buf, len))
     {
+        if (len)   *len  = _bufLen;
         if (from)  *from =  headerFrom();
         if (to)    *to =    headerTo();
         if (id)    *id =    headerId();
