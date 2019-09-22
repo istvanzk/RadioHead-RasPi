@@ -151,21 +151,18 @@ int main (int argc, const char* argv[] )
             uint8_t to;    // = rf22.headerTo();
             uint8_t id;    // = rf22.headerId();
             uint8_t flags; // = rf22.headerFlags();
+            int8_t rssi  = rf22.lastRssi();
 
             /* Begin Reliable Datagram Code */
-            if (manager.recvfromAck(buf, &len, &from, &to, &id, &flags))
-            {
-                int8_t rssi  = rf22.lastRssi();
-                printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
-                printbuffer(buf, len);
-                printf("'");
-            } else
-                printf("RF22B RD: Packet receive failed\n");
-
+            manager.recvfromAck(buf, &len, &from, &to, &id, &flags);
+            printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
+            printbuffer(buf, len);
+            printf("'");
             printf("\n");
             rf22.setModeRx();
+            /* End Reliable Datagram Code */
+
         }
-        /* End Reliable Datagram Code */
 
         // Let OS doing other tasks
         // For timed critical appliation you can reduce or delete
