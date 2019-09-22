@@ -125,7 +125,7 @@ bool RH_RF22::init()
     spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
 #else
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID ); // | RH_RF22_ENCRCERROR);
-    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL); // | RH_RF22_ENSWDET);
+    //spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL); // | RH_RF22_ENSWDET);
 #endif
 
 
@@ -603,11 +603,10 @@ bool RH_RF22::available()
 
         // Save msg in our buffer _buf with length _bufLen
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
+        {
             readFifo();
 
-        // Read RSSI
-        if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
-        {
+            // Read RSSI
             _lastRssi = (int8_t)( -120 + ( (spiRead(RH_RF22_REG_26_RSSI) - 15) * 3/5 ) );
             _lastPreambleTime = millis();
             printf(" - RSSI %ddBm - ", _lastRssi);
