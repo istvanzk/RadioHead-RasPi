@@ -133,7 +133,7 @@ int main (int argc, const char* argv[] )
 
 
     uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-    uint8_t len;  //= sizeof(buf);
+    uint8_t len = sizeof(buf);
     uint8_t from; //= rf22.headerFrom();
     uint8_t to;   //= rf22.headerTo();
     uint8_t id;   //= rf22.headerId();
