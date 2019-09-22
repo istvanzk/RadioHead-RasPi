@@ -159,7 +159,7 @@ int main (int argc, const char* argv[] )
                 printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
                 printbuffer(buf, len);
                 printf("'");
-            } else {
+            } else
                 printf("RF22B RD: Packet receive failed\n");
 
             printf("\n");
@@ -170,7 +170,7 @@ int main (int argc, const char* argv[] )
         // Let OS doing other tasks
         // For timed critical appliation you can reduce or delete
         // this delay, but this will charge CPU usage, take care and monitor
-        bcm2835_delay(200);
+        bcm2835_delay(100);
     }
 
   }
