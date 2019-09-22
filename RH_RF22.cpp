@@ -605,7 +605,7 @@ bool RH_RF22::available()
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
             readFifo();
 
-        _lastRssi = (int8_t)(-120 + (((spiRead(RH_RF22_REG_26_RSSI) - 15) * 2/5)));
+        _lastRssi = (int8_t)(-120 + (((spiRead(RH_RF22_REG_26_RSSI) - 15) * 3/5)));
         _lastPreambleTime = millis();
         printf(" - RSSI %ddBm - ", _lastRssi);
 
@@ -698,6 +698,19 @@ bool RH_RF22::recv(uint8_t* buf, uint8_t* len)
     return true;
 }
 
+bool RH_RF22::recvfrom(uint8_t* buf, uint8_t* len, uint8_t* from, uint8_t* to, uint8_t* id, uint8_t* flags)
+{
+    if (recv(buf, len))
+    {
+        if (from)  *from =  headerFrom();
+        if (to)    *to =    headerTo();
+        if (id)    *id =    headerId();
+        if (flags) *flags = headerFlags();
+        return true;
+    }
+    return false;
+}
+
 void RH_RF22::clearTxBuf()
 {
     ATOMIC_BLOCK_START;
@@ -745,6 +758,13 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     }
     ATOMIC_BLOCK_END;
     return ret;
+}
+
+
+bool RH_RF22::sendto(uint8_t* buf, uint8_t len, uint8_t address)
+{
+    setHeaderTo(address);
+    return send(buf, len);
 }
 
 #ifdef RH_RF22_IRQLESS

@@ -1193,6 +1193,11 @@ public:
 
     /// Starts the receiver and checks whether a received message is available.
     /// This can be called multiple times in a timeout loop
+    /// When RH_RF22_IRQLESS is defined this needs to be called multiple in polling loop!
+    /// When RH_RF22_IRQLESS is defined, then:
+    /// - read first the RH_RF22_REG_03_INTERRUPT_STATUS1 and check RH_RF22_IPKVALID
+    /// - if RH_RF22_IPKVALID is set then read the FIFO data with readFifo()
+    /// - set the _lastRssi and _lastPreambleTime
     /// \return true if a complete, valid message has been received and is able to be retrieved by
     /// recv()
     bool        available();
@@ -1208,6 +1213,24 @@ public:
     /// \return true if a valid message was copied to buf
     bool        recv(uint8_t* buf, uint8_t* len);
 
+    /// Copy from RHDatagram
+    /// Turns the receiver on if it not already on.
+    /// If there is a valid message available for this node, copy it to buf and return true
+    /// The SRC address is placed in *from if present and not NULL.
+    /// The DEST address is placed in *to if present and not NULL.
+    /// If a message is copied, *len is set to the length.
+    /// You should be sure to call this function frequently enough to not miss any messages
+    /// It is recommended that you call it in your main loop.
+    /// \param[in] buf Location to copy the received message
+    /// \param[in,out] len Pointer to available space in buf. Set to the actual number of octets copied.
+    /// \param[in] from If present and not NULL, the referenced uint8_t will be set to the FROM address
+    /// \param[in] to If present and not NULL, the referenced uint8_t will be set to the TO address
+    /// \param[in] id If present and not NULL, the referenced uint8_t will be set to the ID
+    /// \param[in] flags If present and not NULL, the referenced uint8_t will be set to the FLAGS
+    /// (not just those addressed to this node).
+    /// \return true if a valid message was copied to buf
+    bool        recvfrom(uint8_t* buf, uint8_t* len, uint8_t* from, uint8_t* to, uint8_t* id, uint8_t* flags);
+
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then loads a message into the transmitter and starts the transmitter. Note that a message length
     /// of 0 is NOT permitted.
@@ -1215,6 +1238,16 @@ public:
     /// \param[in] len Number of bytes of data to send (> 0)
     /// \return true if the message length was valid and it was correctly queued for transmit
     bool        send(const uint8_t* data, uint8_t len);
+
+    /// Copy from RHDatagram
+    /// Sends a message to the node(s) with the given address
+    /// RH_BROADCAST_ADDRESS is a valid address which will cause the message
+    /// to be accepted by all RHDatagram nodes within range.
+    /// \param[in] buf Pointer to the binary message to send
+    /// \param[in] len Number of octets to send (> 0)
+    /// \param[in] address The address to send the message to.
+    /// \return true if the message not too loing fot eh driver, and the message was transmitted.
+    bool        sendto(uint8_t* buf, uint8_t len, uint8_t address);
 
     /// Blocks until the current message (if any)
     /// has been transmitted
