@@ -787,7 +787,7 @@ bool RH_RF22::waitPacketSent()
     // A transmitter message has been fully sent
     _txGood++;
     clearTxBuf();
-    setModeIdle();
+    setModeIdle(); // Does not clear FIFO!
     return true;
 }
 
