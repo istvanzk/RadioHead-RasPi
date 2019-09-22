@@ -87,8 +87,8 @@ int main (int argc, const char* argv[] )
   } else {
     printf( "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
-    // Since we may check IRQ line with bcm_2835 Falling edge detection
-    // In case radio already have a packet, IRQ is low and will never
+    // Since we may check IRQ line with bcm_2835 Falling edge (or level) detection
+    // in case radio already have a packet, IRQ is low and will never
     // go to high so never fire again
     // Except if we clear IRQ flags and discard one if any by checking
     rf22.available();
@@ -96,7 +96,6 @@ int main (int argc, const char* argv[] )
     // Enable Falling Edge Detect Enable for the specified pin.
     // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
     //bcm2835_gpio_fen(RF_IRQ_PIN);
-
     //printf("BCM2835: Falling edge detect enabled on GPIO%d\n", RF_IRQ_PIN);
 
 
@@ -149,7 +148,7 @@ int main (int argc, const char* argv[] )
             printf(" : Sent OK!\n" );
         else
             printf(" : NOT Sent!\n" );
-        bcm2835_gpio_set_eds(RF_IRQ_PIN);
+        //bcm2835_gpio_set_eds(RF_IRQ_PIN);
       }
 
       // Now wait for a reply
@@ -166,36 +165,28 @@ int main (int argc, const char* argv[] )
         //printf("BCM2835: Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
         printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
-        if (rf22.available())
+        uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
+        uint8_t len = sizeof(buf);
+        uint8_t from; //= rf22.headerFrom();
+        uint8_t to;   //= rf22.headerTo();
+        uint8_t id;   //= rf22.headerId();
+        uint8_t flags;//= rf22.headerFlags();
+
+        if (rf22.recvfrom(buf, &len, &from, &to, &id, &flags))
         {
-          // Should be a message for us now
-
-          printf("RF22B: Received packet available\n");
-
-          uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-          uint8_t len  = sizeof(buf);
-          uint8_t from = rf22.headerFrom();
-          uint8_t to   = rf22.headerTo();
-          //uint8_t id   = rf22.headerId();
-          //uint8_t flags= rf22.headerFlags();
-          int8_t rssi  = rf22.lastRssi();
-
-          if (rf22.recv(buf, &len))
-          {
-            printf("RF22B: Packet received [%02d] #%d => #%d %ddBm: '", len, from, to, rssi);
+            // Should be a message for us now
+            int8_t rssi  = rf22.lastRssi();
+            printf("RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
             printbuffer(buf, len);
-            printf("'");
-          } else
-            printf("RF22B: Packet receive failed");
-
-          printf("\n");
-        }
+            printf("'\n");
+        } else
+            printf("RF22B: Packet receive failed\n");
 
       }
 
       // Let OS doing other tasks
       // Since we do nothing until each 5 sec
-      delay(100);
+      delay(200);
     }
   }
 
