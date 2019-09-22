@@ -133,7 +133,7 @@ int main (int argc, const char* argv[] )
 
 
     uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-    uint8_t len  = sizeof(buf);
+    uint8_t len;  //= sizeof(buf);
     uint8_t from; //= rf22.headerFrom();
     uint8_t to;   //= rf22.headerTo();
     uint8_t id;   //= rf22.headerId();
@@ -161,8 +161,8 @@ int main (int argc, const char* argv[] )
         {
             // Should be a message for us now
             int8_t rssi  = rf22.lastRssi();
-            printf("RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm", len, from, to, id, flags, rssi);
-            rf22.printBuffer(" => '", buf, len);
+            printf("RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
+            printbuffer(buf, len);
             printf("'\n");
         } else
             printf("RF22B: Packet receive failed\n");
