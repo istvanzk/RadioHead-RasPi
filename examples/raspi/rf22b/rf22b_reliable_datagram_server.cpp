@@ -133,52 +133,46 @@ int main (int argc, const char* argv[] )
     // NOT available in RHDatagram
     rf22.setModeRx();
 
-    uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
-    uint8_t len = sizeof(buf);
-    uint8_t from;  // = rf22.headerFrom();
-    uint8_t to;    // = rf22.headerTo();
-    uint8_t id;    // = rf22.headerId();
-    uint8_t flags; // = rf22.headerFlags();
-
     printf( "\tListening ...\n" );
 
     //Begin the main body of code
     while (!force_exit)
     {
 
-      // We have a IRQ pin ,pool it instead reading
-      // Modules IRQ registers from SPI in each loop
-      if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
-      {
-        printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
-
-        /* Begin Reliable Datagram Code */
-        if (manager.available())
+        // We have a IRQ pin ,pool it instead reading
+        // Modules IRQ registers from SPI in each loop
+        if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
         {
-            printf("RF22B RD: Received packet available\n");
+            printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
-            // Wait for a message addressed to us from the client
-            int8_t rssi  = rf22.lastRssi();
+            uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
+            uint8_t len = sizeof(buf);
+            uint8_t from;  // = rf22.headerFrom();
+            uint8_t to;    // = rf22.headerTo();
+            uint8_t id;    // = rf22.headerId();
+            uint8_t flags; // = rf22.headerFlags();
+
+            /* Begin Reliable Datagram Code */
             if (manager.recvfromAck(buf, &len, &from, &to, &id, &flags))
             {
+                int8_t rssi  = rf22.lastRssi();
                 printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
                 printbuffer(buf, len);
                 printf("'");
             } else {
                 printf("RF22B RD: Packet receive failed\n");
-            }
+
             printf("\n");
             rf22.setModeRx();
         }
         /* End Reliable Datagram Code */
 
-      }
-
-      // Let OS doing other tasks
-      // For timed critical appliation you can reduce or delete
-      // this delay, but this will charge CPU usage, take care and monitor
-      bcm2835_delay(200);
+        // Let OS doing other tasks
+        // For timed critical appliation you can reduce or delete
+        // this delay, but this will charge CPU usage, take care and monitor
+        bcm2835_delay(200);
     }
+
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
