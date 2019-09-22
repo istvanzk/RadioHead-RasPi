@@ -161,6 +161,7 @@ int main (int argc, const char* argv[] )
         {
             // Should be a message for us now
             int8_t rssi  = rf22.lastRssi();
+            len  = sizeof(buf);
             printf("RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
             printbuffer(buf, len);
             printf("'\n");
