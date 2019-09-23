@@ -607,13 +607,10 @@ bool RH_RF22::available()
             printf(" - RSSI %ddBm - ", _lastRssi);
         }
 
-        //spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
-
-        //setModeIdle();
-
         // Save msg in our buffer _buf with length _bufLen
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
         {
+            setModeIdle();
             readFifo();
         }
 
