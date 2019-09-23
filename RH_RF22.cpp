@@ -599,17 +599,22 @@ bool RH_RF22::available()
         uint8_t _lastInterruptFlags[2];
         spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
 
+        // Read RSSI
+        if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
+        {
+            _lastRssi = (int8_t)( -120 + ( (spiRead(RH_RF22_REG_26_RSSI) - 15) * 3/5 ) );
+            _lastPreambleTime = millis();
+            printf(" - RSSI %ddBm - ", _lastRssi);
+        }
+
+        spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
+
         setModeIdle();
 
         // Save msg in our buffer _buf with length _bufLen
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
         {
             readFifo();
-
-            // Read RSSI
-            _lastRssi = (int8_t)( -120 + ( (spiRead(RH_RF22_REG_26_RSSI) - 15) * 3/5 ) );
-            _lastPreambleTime = millis();
-            printf(" - RSSI %ddBm - ", _lastRssi);
         }
 
 #if 0
