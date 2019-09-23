@@ -597,8 +597,8 @@ bool RH_RF22::available()
         // Read the interrupt flags, which then clears the enabled interrupt bits/flags
         // This code acts partly as an 'interrupt handler'
         uint8_t _lastInterruptFlags[2];
-
         spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
+
         // Read RSSI
         if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
         {
@@ -607,7 +607,6 @@ bool RH_RF22::available()
             printf(" - RSSI %ddBm - ", _lastRssi);
         }
 
-        spiBurstRead(RH_RF22_REG_03_INTERRUPT_STATUS1, _lastInterruptFlags, 2);
         // Save msg in our buffer _buf with length _bufLen
         if (_lastInterruptFlags[0] & RH_RF22_IPKVALID)
         {
