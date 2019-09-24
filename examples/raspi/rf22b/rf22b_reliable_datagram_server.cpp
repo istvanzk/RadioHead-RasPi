@@ -159,6 +159,7 @@ int main (int argc, const char* argv[] )
             printbuffer(buf, len);
             printf("'");
             printf("\n");
+
             rf22.setModeRx();
             /* End Reliable Datagram Code */
 
