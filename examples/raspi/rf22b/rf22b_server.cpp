@@ -145,7 +145,7 @@ int main (int argc, const char* argv[] )
     while (!force_exit)
     {
 
-      // We have a IRQ pin ,pool it instead reading
+      // We have a IRQ pin, pool it instead reading
       // Modules IRQ registers from SPI in each loop
 
       // Falling edge fired ?
