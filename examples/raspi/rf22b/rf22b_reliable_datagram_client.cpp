@@ -57,8 +57,12 @@ volatile sig_atomic_t force_exit = false;
 
 void sig_handler(int sig)
 {
-  printf("\n%s Break received, exiting!\n", __BASEFILE__);
-  force_exit=true;
+  printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
+
+  bcm2835_spi_end();
+  bcm2835_close();
+
+  exit(sig);
 }
 
 //Main Function
@@ -75,33 +79,22 @@ int main (int argc, const char* argv[] )
     return 1;
   }
 
-  printf( "RF22B CS=GPIO%d", RF_CS_PIN);
-
-
-#ifdef RF_IRQ_PIN
-  printf( ", IRQ=GPIO%d", RF_IRQ_PIN );
-  // IRQ Pin input/pull up
+ // IRQ Pin input/pull up
   // When RX packet is available the pin is pulled down (IRQ is low!)
   bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
   bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
-#endif
+
 
   if (!manager.init()) {
-    fprintf( stderr, "\nRF22B module or Datagram manager init failed, Please verify wiring/module\n" );
+    fprintf( stderr, "\nRF22B RD: Module init() failed. Please verify wiring/module\n" );
   } else {
-    printf( "\nRF22B module and Datagram manager seen OK!\r\n");
+    printf( "RF22B RD: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
 
-#ifdef RF_IRQ_PIN
-    // Since we may check IRQ line with bcm_2835 Falling edge detection
-    // In case radio already have a packet, IRQ is low and will never
+    // Since we may check IRQ line with bcm_2835 level detection
+    // in case radio already have a packet, IRQ is low and will never
     // go to high so never fire again
     // Except if we clear IRQ flags and discard one if any by checking
     manager.available();
-
-    // Enable Falling Edge Detect Enable for the specified pin.
-    // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
-    bcm2835_gpio_fen(RF_IRQ_PIN);
-#endif
 
 
     // Defaults after init are 434.0MHz, 0.05MHz AFC pull-in, modulation FSK_Rb2_4Fd36, 8dBm Tx power
@@ -114,22 +107,23 @@ int main (int argc, const char* argv[] )
     // set Network ID (by sync words)
     uint8_t syncwords[2];
     syncwords[0] = 0x2d;
-    syncwords[1] = RF_GROUP_ID;
+    syncwords[1] = 0xd4; //RF_GROUP_ID;
     // NOT available in RHDatagram
     rf22.setSyncWords(syncwords, sizeof(syncwords));
 
     // Adjust Frequency
     // NOT available in RHDatagram
-    rf22.setFrequency(RF_FREQUENCY);
+    //rf22.setFrequency(RF_FREQUENCY, 0.05);
 
     // This is our Node ID
     manager.setThisAddress(RF_NODE_ID);
-    //rf22.setHeaderFrom(RF_NODE_ID);
+    manager.setHeaderFrom(RF_NODE_ID);
 
     // Where we're sending packet
     manager.setHeaderTo(RF_GATEWAY_ID);
 
-    printf("RF22B RD: Group #%d, Node #%d to GW #%d init OK @ %3.2fMHz with %3.1dBm\n", RF_GROUP_ID, RF_NODE_ID, RF_GATEWAY_ID, RF_FREQUENCY, RF_TX_DBM);
+    printf("RF22B RD: Group #%d, GW #%d to Node #%d init OK @ %3.2fMHz with 0x%02X TxPw\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TX_DBM);
+
 
     last_millis = millis();
 
@@ -143,41 +137,46 @@ int main (int argc, const char* argv[] )
         last_millis = millis();
 
         // Send a message to rf22b_reliable_datagram_server
-        uint8_t data[] = "Hi Raspi!";
-        uint8_t len = sizeof(data);
+        uint8_t data[]   = "Hi, I'm a Raspi!";
+        uint8_t len_data = sizeof(data);
 
-        printf("RF22B RD: Sending %02d bytes to node #%d => ", len, RF_GATEWAY_ID );
-        printbuffer(data, len);
-        printf("\n" );
+        printf("RF22B: Sending %02d bytes to GW #%d => '", len_data, RF_GATEWAY_ID );
+        printbuffer(data, len_data);
+        printf("' ");
 
         if (manager.sendtoWait(data, sizeof(data), RF_GATEWAY_ID)){
-            // Now wait for a reply
+            // ACK received
+            // Now wait for a reply message too
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
             uint8_t len = sizeof(buf);
-            uint8_t from;
-	    uint8_t to   = rf22.headerTo();
-            int8_t rssi  = rf22.lastRssi();
-            if (manager.recvfromAckTimeout(buf, &len, 2000, &from))
+            uint8_t from; //= rf22.headerFrom();
+            uint8_t to;   //= rf22.headerTo();
+            uint8_t id;   //= rf22.headerId();
+            uint8_t flags;//= rf22.headerFlags();
+            if (manager.recvfromAckTimeout(buf, &len, 200, &from, &to, &id, &flags))
             {
-                printf("RF22B RD: Packet received [%02d] #%d => #%d %ddB: ", len, from, to, rssi);
+                int8_t rssi  = rf22.lastRssi();
+                printf("RF22B RD: Packet received, %02d bytes, from #%d to #%d, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
                 printbuffer(buf, len);
+                printf("'\n");
             } else {
-                printf("RF22B RD: No reply, is a rf22b_reliable_datagram_server running?\n");
+                printf("RF22B RD: No reply from server! Is a rf22b_reliable_datagram_server sending a reply message?\n");
             }
 
         } else {
-            printf("RF22B RD: Datagram manager sendtoWait failed\n");
+            printf("RF22B RD: sendtoWait failed! Is a rf22b_reliable_datagram_server running?\n");
         }
 
       }
 
       // Let OS doing other tasks
       // Since we do nothing until each 5 sec
-      bcm2835_delay(100);
+      bcm2835_delay(2000);
     }
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
+  bcm2835_spi_end();
   bcm2835_close();
   return 0;
 }
