@@ -106,10 +106,10 @@ int main (int argc, const char* argv[] )
 
     // Set Network ID (by sync words)
     // Use this for any non-default setup, else leave commented out
-    //uint8_t syncwords[2];
-    //syncwords[0] = 0x2d;
-    //syncwords[1] = RF_GROUP_ID;
-    //rf22.setSyncWords(syncwords, sizeof(syncwords));
+    uint8_t syncwords[2];
+    syncwords[0] = 0x2d;
+    syncwords[1] = 0xd4; //RF_GROUP_ID;
+    rf22.setSyncWords(syncwords, sizeof(syncwords));
 
     // Adjust Frequency
     //rf22.setFrequency(RF_FREQUENCY,0.05);
