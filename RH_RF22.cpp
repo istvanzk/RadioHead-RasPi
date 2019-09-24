@@ -747,6 +747,8 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     if (!waitCAD()) // Check channel activity
         return false;
 
+    printf(" - Sending ACK - ");
+
     ATOMIC_BLOCK_START;
     spiWrite(RH_RF22_REG_3A_TRANSMIT_HEADER3, _txHeaderTo);
     spiWrite(RH_RF22_REG_3B_TRANSMIT_HEADER2, _txHeaderFrom);
@@ -758,6 +760,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     {
         startTransmit();
         ret = waitPacketSent();
+        printf(" - %d - ", ret);
     }
     ATOMIC_BLOCK_END;
     return ret;
@@ -783,8 +786,9 @@ bool RH_RF22::waitPacketSent()
     // Wait until the packet has been transmitted
     // Read the interrupt flags which clears the interrupt
     while (!(spiRead(RH_RF22_REG_03_INTERRUPT_STATUS1) & RH_RF22_IPKSENT))
-//      YIELD;
-        ;
+      YIELD;
+
+    printf(" - waitPacketSent - ");
 
     // A transmitter message has been fully sent
     _txGood++;
