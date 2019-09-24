@@ -782,9 +782,9 @@ bool RH_RF22::waitPacketSent()
 
     // Wait until the packet has been transmitted
     // Read the interrupt flags which clears the interrupt
-    while (!(spiRead(RH_RF22_REG_03_INTERRUPT_STATUS1) & RH_RF22_IPKSENT)){
-      YIELD;
-    }
+    while (!(spiRead(RH_RF22_REG_03_INTERRUPT_STATUS1) & RH_RF22_IPKSENT))
+//      YIELD;
+        ;
 
     // A transmitter message has been fully sent
     _txGood++;
@@ -820,14 +820,14 @@ void RH_RF22::sendNextFragment()
 {
     if (_txBufSentIndex < _bufLen)
     {
-    // Some left to send?
-    uint8_t len = _bufLen - _txBufSentIndex;
-    // But dont send too much
-    if (len > (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1))
-        len = (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1);
-    spiBurstWrite(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _txBufSentIndex, len);
+        // Some left to send?
+        uint8_t len = _bufLen - _txBufSentIndex;
+        // But dont send too much
+        if (len > (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1))
+            len = (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1);
+        spiBurstWrite(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _txBufSentIndex, len);
 //  printBuffer("frag:", _buf  + _txBufSentIndex, len);
-    _txBufSentIndex += len;
+        _txBufSentIndex += len;
     }
 }
 
