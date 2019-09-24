@@ -43,7 +43,7 @@
 
 // Our RFM22B Configuration
 #define RF_FREQUENCY  434.00
-#define RF_TX_DBM     RH_RF22_TXPOW_1DBM
+#define RF_TX_DBM     RH_RF22_TXPOW_11DBM
 #define RF_GROUP_ID   22 // All devices
 #define RF_GATEWAY_ID 1  // Server ID (where to send packets)
 #define RF_NODE_ID    10 // Client ID (device sending the packets)
