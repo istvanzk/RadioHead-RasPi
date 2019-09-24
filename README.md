@@ -182,8 +182,19 @@ RF22B: Packet received, 13 bytes, from #255 to #255, with -126dBm => 'Hello Worl
 rf22b_server Interrupt signal (2) received. Exiting!
 ```
 
-Note: The RSSI readings are not very reliable.
+**The rf22b_reliable_datagram_server example**
 
+Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_reliable_datagram_server.
+The server does not reply with a new msg as in rf22_reliable_datagram_server.pde, only the ACK is be transmitted to the client.
+Using a simplified rf22_reliable_datagram_client.pde at the client node without manager.recvfromAckTimeout(...) sequence.
+
+*The current version rf22b_reliable_datagram_server.cpp is very unstable*
+- sometimes it does not start, or
+- when it starts, it hangs after a few correctly received packets, and/or
+- received packet lenght is incorrect and has the max length configured in RH_RF22.h, and/or
+- the ACK transmission seems is never received at the client (the client manager.sendToWait(...) returns false), even if the debug msg shows it has been transmitted
+
+When using the same client and the rf22b_server.cpp, all the messages are received correctly (1st + 3 re-transmissions).
 
 #### Packet Format for RF22B based radio modules
 
