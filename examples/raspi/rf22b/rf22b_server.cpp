@@ -41,7 +41,7 @@
 
 // Our RFM22B Configuration
 #define RF_FREQUENCY  434.0
-#define RF_TXPOW      RH_RF22_TXPOW_1DBM
+#define RF_TXPOW      RH_RF22_TXPOW_11DBM
 #define RF_GROUP_ID   22 // All devices
 #define RF_GATEWAY_ID 1  // Server ID (where to send packets)
 #define RF_NODE_ID    10 // Client ID (device sending the packets)
@@ -126,7 +126,7 @@ int main (int argc, const char* argv[] )
 
     // Be sure to grab all node packet
     // we're sniffing to display, it's a demo
-    rf22.setPromiscuous(true);
+    rf22.setPromiscuous(false);
 
     // We're ready to listen for incoming message
     rf22.setModeRx();
@@ -140,6 +140,8 @@ int main (int argc, const char* argv[] )
     uint8_t flags;//= rf22.headerFlags();
 
     printf( "\tListening ...\n" );
+
+    uint8_t last_id = 0;
 
     //Begin the main body of code
     while (!force_exit)
@@ -165,12 +167,16 @@ int main (int argc, const char* argv[] )
             printbuffer(buf, len);
             printf("'\n");
 
-            // Send back an ACK
-            uint8_t ack = '!';
-            rf22.setHeaderId(id);
-            rf22.setHeaderFlags(0x80);
-            rf22.sendto(&ack, sizeof(ack), from);
-            rf22.setModeRx();
+            // Send back an ACK if not done already
+	    if (id != last_id)
+	    {
+	        uint8_t ack = '!';
+        	rf22.setHeaderId(id);
+            	rf22.setHeaderFlags(0x80);
+            	rf22.sendto(&ack, sizeof(ack), from);
+            	rf22.setModeRx();
+		last_id = id;
+	    }
 
         } else
             printf("RF22B: Packet receive failed\n");
