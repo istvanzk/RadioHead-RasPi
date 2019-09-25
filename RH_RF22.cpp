@@ -765,9 +765,9 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
         startTransmit();
         ret = waitPacketSent();
         if (ret)
-            printf(" - Send OK Tx - ");
+            printf(" - Send OK Tx - \n");
         else
-            printf(" - Send NOK Tx - ");
+            printf(" - Send NOK Tx - \n");
 
     }
     ATOMIC_BLOCK_END;
@@ -796,7 +796,7 @@ bool RH_RF22::waitPacketSent()
     while (!(spiRead(RH_RF22_REG_03_INTERRUPT_STATUS1) & RH_RF22_IPKSENT))
       YIELD;
 
-    printf(" - waitPacketSent - \n");
+    printf(" - waitPacketSent - ");
 
     // A transmitter message has been fully sent
     _txGood++;
