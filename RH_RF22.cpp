@@ -758,7 +758,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     if (!fillTxBuf(data, len))
     {
         ret = false;
-        printf(" - Send NOK TxBuff - ");
+        printf(" - Send NOK TxBuff - \n");
     }
     else
     {
