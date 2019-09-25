@@ -45,8 +45,8 @@
 #define RF_FREQUENCY  434.00
 #define RF_TX_DBM     RH_RF22_TXPOW_11DBM
 #define RF_GROUP_ID   22 // All devices
-#define RF_GATEWAY_ID 1  // Server ID (where to send packets)
-#define RF_NODE_ID    10 // Client ID (device sending the packets)
+#define RF_GATEWAY_ID 2  // Server ID (where to send packets)
+#define RF_NODE_ID    1 // Client ID (device sending the packets)
 
 // Create an instance of a driver and the manager
 RH_RF22 rf22(RF_CS_PIN, RF_IRQ_PIN);
