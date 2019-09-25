@@ -343,7 +343,7 @@ void RH_RF22::readFifo()
     {
         _rxBad++;
         _mode = RHModeIdle;
-        printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
+        //printf(" - RXBUF OVF %d vs. %d - ", len, _bufLen);
         clearRxBuf();
         return; // Hmmm receiver buffer overflow.
     }
@@ -362,9 +362,10 @@ void RH_RF22::readFifo()
         _rxGood++;
         _mode = RHModeIdle;
         _rxBufValid = true;
-        printf(" - RXBUF VALID 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
-    } else
-        printf(" - RXBUF IGNOR 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
+        //printf(" - RXBUF VALID 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
+    }
+    //else
+    //    printf(" - RXBUF IGNOR 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
 }
 
 
