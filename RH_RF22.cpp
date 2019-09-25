@@ -747,7 +747,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     if (!waitCAD()) // Check channel activity
         return false;
 
-    printf(" - Sending ACK - ");
+    printf(" - Sending - ");
 
     ATOMIC_BLOCK_START;
     spiWrite(RH_RF22_REG_3A_TRANSMIT_HEADER3, _txHeaderTo);
