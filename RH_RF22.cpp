@@ -604,7 +604,7 @@ bool RH_RF22::available()
         {
             _lastRssi = (int8_t)( -120 + ( (spiRead(RH_RF22_REG_26_RSSI) - 15) * 3/5 ) );
             _lastPreambleTime = millis();
-            printf(" - RSSI %ddBm - ", _lastRssi);
+            //printf(" - RSSI %ddBm - ", _lastRssi);
         }
 
         // Save msg in our buffer _buf with length _bufLen
@@ -672,12 +672,13 @@ bool RH_RF22::available()
 
     if (!_rxBufValid)
     {
-        printf(" - RXBUF NOT VALID %d - \n", rxBad());
+        //printf(" - RXBUF NOT VALID %d - \n", rxBad());
         if (_mode == RHModeTx)
             return false;
         setModeRx(); // Make sure we are receiving
-    } else
-        printf(" - RXBUF VALID %d - \n", rxGood());
+    }
+    //else
+    //    printf(" - RXBUF VALID %d - \n", rxGood());
 
     return _rxBufValid;
 }
