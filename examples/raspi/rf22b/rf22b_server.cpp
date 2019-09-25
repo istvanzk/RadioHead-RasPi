@@ -170,6 +170,7 @@ int main (int argc, const char* argv[] )
             rf22.setHeaderId(id);
             rf22.setHeaderFlags(0x80);
             rf22.sendto(&ack, sizeof(ack), from);
+            rf22.setModeRx();
 
         } else
             printf("RF22B: Packet receive failed\n");
