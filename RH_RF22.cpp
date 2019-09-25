@@ -743,6 +743,7 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     bool ret = true;
 
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
+    setModeIdle(); // Prevent RX while filling the fifo
 
     if (!waitCAD()) // Check channel activity
         return false;
