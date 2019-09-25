@@ -742,13 +742,13 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
 {
     bool ret = true;
 
+    printf(" - Send - ");
+
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
     setModeIdle(); // Prevent RX while filling the fifo
 
     if (!waitCAD()) // Check channel activity
         return false;
-
-    printf(" - Sending - ");
 
     ATOMIC_BLOCK_START;
     spiWrite(RH_RF22_REG_3A_TRANSMIT_HEADER3, _txHeaderTo);
@@ -756,11 +756,19 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     spiWrite(RH_RF22_REG_3C_TRANSMIT_HEADER1, _txHeaderId);
     spiWrite(RH_RF22_REG_3D_TRANSMIT_HEADER0, _txHeaderFlags);
     if (!fillTxBuf(data, len))
+    {
         ret = false;
+        printf(" - Send NOK TxBuff - ");
+    }
     else
     {
         startTransmit();
         ret = waitPacketSent();
+        if (ret)
+            printf(" - Send OK Tx - ");
+        else
+            printf(" - Send NOK Tx - ");
+
     }
     ATOMIC_BLOCK_END;
     return ret;
