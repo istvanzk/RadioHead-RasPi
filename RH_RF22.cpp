@@ -789,22 +789,33 @@ bool RH_RF22::sendto(uint8_t* buf, uint8_t len, uint8_t address)
 // waitPacketSent for the driver by reading RF22B internal register
 bool RH_RF22::waitPacketSent()
 {
+    bool ret = true;
+
     // If we are not currently in transmit mode, there is no packet to wait for
     if (_mode != RHModeTx)
         return false;
 
     // Wait until the packet has been transmitted
     // Read the interrupt flags which clears the interrupt
+    unsigned long starttime = millis();
     while (!(spiRead(RH_RF22_REG_03_INTERRUPT_STATUS1) & RH_RF22_IPKSENT))
-      YIELD;
-
+    {
+        if ((millis() - starttime) > 100)
+        {
+            ret=false;
+            break;
+        }
+        YIELD;
+    }
     printf(" - waitPacketSent - ");
 
     // A transmitter message has been fully sent
-    _txGood++;
+    if (ret)
+        _txGood++;
+
     clearTxBuf();
     setModeIdle(); // Does not clear FIFO!
-    return true;
+    return ret;
 }
 
 #endif
