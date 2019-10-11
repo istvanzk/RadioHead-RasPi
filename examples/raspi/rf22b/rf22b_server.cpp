@@ -57,6 +57,7 @@ void sig_handler(int sig)
   printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
   //force_exit=true;
 
+  bcm2835_gpio_clr_len(RF_IRQ_PIN);
   bcm2835_spi_end();
   bcm2835_close();
 
@@ -94,7 +95,7 @@ int main (int argc, const char* argv[] )
 
     // Enable Falling Edge Detect Enable for the specified pin.
     // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
-    //bcm2835_gpio_fen(RF_IRQ_PIN);
+    bcm2835_gpio_len(RF_IRQ_PIN);
     //printf("BCM2835: Falling edge detect enabled on GPIO%d\n", RF_IRQ_PIN);
 
 
@@ -151,11 +152,11 @@ int main (int argc, const char* argv[] )
       // Modules IRQ registers from SPI in each loop
 
       // Falling edge fired ?
-      //if (bcm2835_gpio_eds(RF_IRQ_PIN))
-      if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
+      if (bcm2835_gpio_eds(RF_IRQ_PIN))
+      //if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
       {
         // Now clear the eds flag by setting it to 1
-        //bcm2835_gpio_set_eds(RF_IRQ_PIN);
+        bcm2835_gpio_set_eds(RF_IRQ_PIN);
         //printf("BCM2835: Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
         printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
@@ -182,16 +183,16 @@ int main (int argc, const char* argv[] )
             printf("RF22B: Packet receive failed\n");
 
       }
-
+      fflush(stdout);
       // Let OS doing other tasks
       // For timed critical application you can reduce or delete
       // this delay, but this will charge CPU usage, take care and monitor
-      delay(200);
+      bcm2835_delay(100);
     }
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
-  //bcm2835_gpio_clr_fen(RF_IRQ_PIN);
+  bcm2835_gpio_clr_len(RF_IRQ_PIN);
   bcm2835_spi_end();
   bcm2835_close();
   return 0;
