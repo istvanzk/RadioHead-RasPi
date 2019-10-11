@@ -23,6 +23,12 @@ Clone repository
 git clone https://github.com/istvanzk/RadioHead
 ```
 
+Note: the example scripts using the bcm2835_gpio_len/eds combination, work only if the boot/config.txt contains the line
+```shell
+dtoverlay=gpio-no-irq
+```
+For the explanations see [conclusion][8], [discussion][9], [discussion][10].
+
 **Connection and pins definition**
 
 To connect a Raspberry Pi (V2) to a [RFM22B][4] module, connect the pins like this:
@@ -188,13 +194,11 @@ Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_reliable
 The server does not reply with a new msg as in rf22_reliable_datagram_server.pde, only the ACK is be transmitted to the client.
 Using a simplified rf22_reliable_datagram_client.pde at the client node without manager.recvfromAckTimeout(...) sequence.
 
-*The current version rf22b_reliable_datagram_server.cpp is very unstable*
+*The current version rf22b_reliable_datagram_server.cpp is fairly unstable*
 - sometimes it does not start, or
-- when it starts, it hangs after a few correctly received packets, and/or
-- received packet lenght is incorrect and has the max length configured in RH_RF22.h, and/or
+- received packet lenght is incorrect and has the max length configured in RH_RF22.h (actual packet is read twice from the buffer), and/or
 - the ACK transmission seems is never received at the client (the client manager.sendToWait(...) returns false), even if the debug msg shows it has been transmitted
 
-When using the same client and the rf22b_server.cpp, all the messages are received correctly (1st + 3 re-transmissions).
 
 #### Packet Format for RF22B based radio modules
 
@@ -225,6 +229,10 @@ For technical reasons, the message format is not protocol compatible with the
 [6]: https://github.com/istvanzk/RadioHead/tree/master/RH_RF22.h
 
 [7]: https://github.com/istvanzk/RadioHead/tree/master/examples/raspi/RasPiBoards.h
+
+[8]: https://github.com/raspberrypi/linux/issues/2550
+[9]: https://groups.google.com/forum/#!topic/bcm2835/Y3D1mmp6vew
+[10]: https://groups.google.com/forum/#!topic/bcm2835/1QWkdCZWlpE
 
 
 
