@@ -57,12 +57,13 @@ volatile sig_atomic_t force_exit = false;
 
 void sig_handler(int sig)
 {
-  printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
+    printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
 
-  bcm2835_spi_end();
-  bcm2835_close();
+    bcm2835_gpio_clr_len(RF_IRQ_PIN);
+    bcm2835_spi_end();
+    bcm2835_close();
 
-  exit(sig);
+    exit(sig);
 }
 
 //Main Function
@@ -95,6 +96,10 @@ int main (int argc, const char* argv[] )
     // Except if we clear IRQ flags and discard one if any by checking
     manager.available();
 
+    // Enable Low Detect Enable for the specified pin.
+    // When a low level detected, sets the appropriate pin in Event Detect Status.
+    bcm2835_gpio_len(RF_IRQ_PIN);
+    printf("BCM2835: Low detect enabled on GPIO%d\n", RF_IRQ_PIN);
 
     // Defaults after init are 434.0MHz, 0.05MHz AFC pull-in, modulation FSK_Rb2_4Fd36, 8dBm Tx power
 
@@ -141,8 +146,11 @@ int main (int argc, const char* argv[] )
 
         // We have a IRQ pin ,pool it instead reading
         // Modules IRQ registers from SPI in each loop
-        if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
+        //if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
+        // Low Detect fired ?
+        if (bcm2835_gpio_eds(RF_IRQ_PIN))
         {
+            bcm2835_gpio_set_eds(RF_IRQ_PIN);
             printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
             uint8_t buf[RH_RF22_MAX_MESSAGE_LEN];
@@ -164,7 +172,7 @@ int main (int argc, const char* argv[] )
             /* End Reliable Datagram Code */
 
         }
-
+        fflush(stdout);
         // Let OS doing other tasks
         // For timed critical appliation you can reduce or delete
         // this delay, but this will charge CPU usage, take care and monitor
@@ -174,6 +182,7 @@ int main (int argc, const char* argv[] )
   }
 
   printf( "\n%s Ending\n", __BASEFILE__ );
+  bcm2835_gpio_clr_len(RF_IRQ_PIN);
   bcm2835_spi_end();
   bcm2835_close();
   return 0;
