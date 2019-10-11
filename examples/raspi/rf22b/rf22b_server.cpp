@@ -54,14 +54,13 @@ volatile sig_atomic_t force_exit = false;
 
 void sig_handler(int sig)
 {
-  printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
-  //force_exit=true;
+    printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
 
-  bcm2835_gpio_clr_len(RF_IRQ_PIN);
-  bcm2835_spi_end();
-  bcm2835_close();
+    bcm2835_gpio_clr_len(RF_IRQ_PIN);
+    bcm2835_spi_end();
+    bcm2835_close();
 
-  exit(sig);
+    exit(sig);
 }
 
 //Main Function
@@ -93,10 +92,10 @@ int main (int argc, const char* argv[] )
     // Except if we clear IRQ flags and discard one if any by checking
     rf22.available();
 
-    // Enable Falling Edge Detect Enable for the specified pin.
-    // When a falling edge is detected, sets the appropriate pin in Event Detect Status.
+    // Enable Low Detect Enable for the specified pin.
+    // When a low level detected, sets the appropriate pin in Event Detect Status.
     bcm2835_gpio_len(RF_IRQ_PIN);
-    //printf("BCM2835: Falling edge detect enabled on GPIO%d\n", RF_IRQ_PIN);
+    printf("BCM2835: Low detect enabled on GPIO%d\n", RF_IRQ_PIN);
 
 
     // Defaults after init are 434.0MHz, 0.05MHz AFC pull-in, modulation FSK_Rb2_4Fd36, 8dBm Tx power
@@ -151,7 +150,7 @@ int main (int argc, const char* argv[] )
       // We have a IRQ pin, pool it instead reading
       // Modules IRQ registers from SPI in each loop
 
-      // Falling edge fired ?
+      // Low Detect fired ?
       if (bcm2835_gpio_eds(RF_IRQ_PIN))
       //if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
       {
