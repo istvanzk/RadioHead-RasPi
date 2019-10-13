@@ -164,6 +164,35 @@ void printbuffer(uint8_t buff[], int len)
   }
 }
 
+// Dump a buffer to specified FILE stream trying to display ASCII or HEX
+// depending on contents
+void fprintbuffer(FILE * stream, uint8_t buff[], int len)
+{
+  int i;
+  bool ascii = true;
+
+  // Check for only printable characters
+  for (i = 0; i< len; i++) {
+    if ( buff[i]<32 || buff[i]>127) {
+      if (buff[i]!=0 || i!=len-1) {
+        ascii = false;
+        break;
+      }
+    }
+  }
+
+  // now do real display according to buffer type
+  // note each char one by one because we're not sure
+  // string will have \0 on the end
+  for (int i = 0; i< len; i++) {
+    if (ascii) {
+      fprintf(stream, "%c", buff[i]);
+    } else {
+      fprintf(stream, "%02X", buff[i]); //no space!
+    }
+  }
+}
+
 void SerialSimulator::begin(int baud)
 {
   //No implementation neccesary - Serial emulation on Linux = standard console

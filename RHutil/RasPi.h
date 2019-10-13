@@ -90,4 +90,6 @@ long random(long min, long max);
 
 void printbuffer(uint8_t buff[], int len);
 
+void fprintbuffer(FILE * stream, uint8_t buff[], int len);
+
 #endif
