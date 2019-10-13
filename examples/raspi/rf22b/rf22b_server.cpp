@@ -163,7 +163,7 @@ int main (int argc, const char* argv[] )
 
             int8_t rssi  = rf22.lastRssi();
             fprintf(stdout, "RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
-            fprintbuffer(buf, len);
+            fprintbuffer(stdout, buf, len);
             fprintf(stdout, "'\n");
 
             // Send back an ACK if not done already
