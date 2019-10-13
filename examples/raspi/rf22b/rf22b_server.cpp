@@ -49,42 +49,47 @@
 // Create an instance of a driver
 RH_RF22 rf22(RF_CS_PIN, RF_IRQ_PIN);
 
-//Flag for Ctrl-C
-volatile sig_atomic_t force_exit = false;
-
-void sig_handler(int sig)
+void end_sig_handler(int sig)
 {
-    printf("\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
+    fprintf(stdout, "\n%s Interrupt signal (%d) received. Exiting!\n", __BASEFILE__, sig);
 
     bcm2835_gpio_clr_len(RF_IRQ_PIN);
     bcm2835_spi_end();
     bcm2835_close();
 
-    exit(sig);
+    if(sig>0)
+        exit(sig);
 }
 
 //Main Function
 int main (int argc, const char* argv[] )
 {
 
-  signal(SIGINT, sig_handler);
-  printf( "%s started\n", __BASEFILE__);
+    fprintf(stdout, "%s started\n", __BASEFILE__);
 
-  if (!bcm2835_init()) {
-    fprintf( stderr, "\n%s BCM2835: init() failed\n", __BASEFILE__ );
-    return 1;
-  }
+    // Signal handler
+    signal(SIGABRT, end_sig_handler);
+    signal(SIGTERM, end_sig_handler);
+    signal(SIGINT, end_sig_handler);
 
-  // IRQ Pin input/pull up
-  // When RX packet is available the pin is pulled down (IRQ is low!)
-  bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
-  bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
+    // BCM library init
+    if (!bcm2835_init()) {
+        fprintf( stderr, "\n%s BCM2835: init() failed\n", __BASEFILE__ );
+        return 1;
+    }
+
+    // IRQ Pin input/pull up
+    // When RX packet is available the pin is pulled down (IRQ is low!)
+    bcm2835_gpio_fsel(RF_IRQ_PIN, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_set_pud(RF_IRQ_PIN, BCM2835_GPIO_PUD_UP);
 
 
-  if (!rf22.init()) {
-    fprintf( stderr, "\nRF22B: Module init() failed. Please verify wiring/module\n" );
-  } else {
-    printf( "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
+    if (!rf22.init()) {
+        fprintf(stderr, "\nRF22B: Module init() failed. Please verify wiring/module\n");
+        end_sig_handler(1);
+    } else {
+        fprintf(stdout, "RF22B: Module seen OK. Using: CS=GPIO%d, IRQ=GPIO%d\n", RF_CS_PIN, RF_IRQ_PIN);
+    }
 
     // Since we may check IRQ line with bcm_2835 Falling edge (or level) detection
     // in case radio already have a packet, IRQ is low and will never
@@ -95,7 +100,7 @@ int main (int argc, const char* argv[] )
     // Enable Low Detect Enable for the specified pin.
     // When a low level detected, sets the appropriate pin in Event Detect Status.
     bcm2835_gpio_len(RF_IRQ_PIN);
-    printf("BCM2835: Low detect enabled on GPIO%d\n", RF_IRQ_PIN);
+    fprintf(stdout, "BCM2835: Low detect enabled on GPIO%d\n", RF_IRQ_PIN);
 
 
     // Defaults after init are 434.0MHz, 0.05MHz AFC pull-in, modulation FSK_Rb2_4Fd36, 8dBm Tx power
@@ -121,7 +126,7 @@ int main (int argc, const char* argv[] )
     // Where we're sending packet
     rf22.setHeaderTo(RF_NODE_ID);
 
-    printf("RF22B: Group #%d, GW 0x%02X to Node 0x%02X init OK @ %3.2fMHz with 0x%02X TxPw\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TXPOW);
+    fprintf(stdout, "RF22B: Group #%d, GW 0x%02X to Node 0x%02X init OK @ %3.2fMHz with 0x%02X TxPw\n", RF_GROUP_ID, RF_GATEWAY_ID, RF_NODE_ID, RF_FREQUENCY, RF_TXPOW);
 
 
     // Be sure to grab all node packet
@@ -139,61 +144,54 @@ int main (int argc, const char* argv[] )
     uint8_t id;   //= rf22.headerId();
     uint8_t flags;//= rf22.headerFlags();
 
-    printf( "\tListening ...\n" );
+    fprintf(stdout, "\tListening ...\n" );
 
     uint8_t last_id = 0;
 
     //Begin the main body of code
-    while (!force_exit)
-    {
+    while (true) {
 
-      // We have a IRQ pin, pool it instead reading
-      // Modules IRQ registers from SPI in each loop
+      // Low Detect ?
+      if (bcm2835_gpio_eds(RF_IRQ_PIN)) {
 
-      // Low Detect fired ?
-      if (bcm2835_gpio_eds(RF_IRQ_PIN))
-      //if (bcm2835_gpio_lev(RF_IRQ_PIN) == LOW)
-      {
         // Now clear the eds flag by setting it to 1
         bcm2835_gpio_set_eds(RF_IRQ_PIN);
-        //printf("BCM2835: Falling edge event detected for pin GPIO%d\n", RF_IRQ_PIN);
-        printf("BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
 
-        if (rf22.recvfrom(buf, &len, &from, &to, &id, &flags))
-        {
-            // Should be a message for us now
+        fprintf(stdout, "BCM2835: LOW detected for pin GPIO%d\n", RF_IRQ_PIN);
+
+        if (rf22.recvfrom(buf, &len, &from, &to, &id, &flags)) {
+
             int8_t rssi  = rf22.lastRssi();
-            printf("RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
-            printbuffer(buf, len);
-            printf("'\n");
+            fprintf(stdout, "RF22B: Packet received, %02d bytes, from 0x%02X to 0x%02X, ID: 0x%02X, F: 0x%02X, with %ddBm => '", len, from, to, id, flags, rssi);
+            fprintbuffer(buf, len);
+            fprintf(stdout, "'\n");
 
             // Send back an ACK if not done already
-	    if (id != last_id)
-	    {
-	        uint8_t ack = '!';
-        	rf22.setHeaderId(id);
-            	rf22.setHeaderFlags(0x80);
-            	rf22.sendto(&ack, sizeof(ack), from);
-            	rf22.setModeRx();
-		last_id = id;
-	    }
+            if (id != last_id) {
+                uint8_t ack = '!';
+                rf22.setHeaderId(id);
+                rf22.setHeaderFlags(0x80);
+                rf22.sendto(&ack, sizeof(ack), from);
+                rf22.setModeRx();
+                last_id = id;
+            }
 
         } else
-            printf("RF22B: Packet receive failed\n");
+            fprintf(stdout, "RF22B: Packet receive failed\n");
 
       }
       fflush(stdout);
+
       // Let OS doing other tasks
       // For timed critical application you can reduce or delete
       // this delay, but this will charge CPU usage, take care and monitor
       bcm2835_delay(100);
-    }
-  }
 
-  printf( "\n%s Ending\n", __BASEFILE__ );
-  bcm2835_gpio_clr_len(RF_IRQ_PIN);
-  bcm2835_spi_end();
-  bcm2835_close();
-  return 0;
+    }
+
+    fprintf(stdout, "\n%s Ending\n", __BASEFILE__ );
+    end_sig_handler(0);
+
+    return 0;
 }
 
