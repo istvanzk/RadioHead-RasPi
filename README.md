@@ -98,7 +98,7 @@ Checking register(0x01) with CS=GPIO08 => RFM22B (V=0x06)
 
 **The rf22b_client example**
 
-Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_client and then run it:
+Go to example folder [RadioHead/examples/raspi/rf22b_izk][5], compile rf22b_client and then run it:
 ```shell
 $ cd RadioHead/examples/raspi/rf22b
 $ make rf22b_client
@@ -148,7 +148,7 @@ rf22b_client Interrupt signal (2) received. Exiting!
 
 **The rf22b_server example**
 
-Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_server and then run it:
+Go to example folder [RadioHead/examples/raspi/rf22b_izk][5], compile rf22b_server and then run it:
 ```shell
 $ cd RadioHead/examples/raspi/rf22b
 $ make rf22b_server
@@ -190,7 +190,7 @@ rf22b_server Interrupt signal (2) received. Exiting!
 
 **The rf22b_reliable_datagram_server example**
 
-Go to example folder [RadioHead/examples/raspi/rf22b][5], compile rf22b_reliable_datagram_server.
+Go to example folder [RadioHead/examples/raspi/rf22b_izk][5], compile rf22b_reliable_datagram_server.
 The server does not reply with a new msg as in rf22_reliable_datagram_server.pde, only the ACK is be transmitted to the client.
 Using a simplified rf22_reliable_datagram_client.pde at the client node without manager.recvfromAckTimeout(...) sequence.
 
@@ -225,7 +225,7 @@ For technical reasons, the message format is not protocol compatible with the
 [3]: http://www.airspayce.com/mikem/arduino/RadioHead/RadioHead-1.108.zip
 
 [4]: https://www.sparkfun.com/products/12030
-[5]: https://github.com/istvanzk/RadioHead/tree/master/examples/raspi/rf22b
+[5]: https://github.com/istvanzk/RadioHead/tree/master/examples/raspi/rf22b_izk
 [6]: https://github.com/istvanzk/RadioHead/tree/master/RH_RF22.h
 
 [7]: https://github.com/istvanzk/RadioHead/tree/master/examples/raspi/RasPiBoards.h
