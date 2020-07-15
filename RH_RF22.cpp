@@ -94,7 +94,6 @@ bool RH_RF22::init()
         return false;
 
 #ifndef RH_RF22_IRQLESS
-
     // Determine the interrupt number that corresponds to the interruptPin
     int interruptNumber = digitalPinToInterrupt(_interruptPin);
     if (interruptNumber == NOT_AN_INTERRUPT)
@@ -106,10 +105,9 @@ bool RH_RF22::init()
     // Tell the low level SPI interface we will use SPI within this interrupt
     spiUsingInterrupt(interruptNumber);
 
-#endif
-
     // Software reset the device
-    //reset();
+    reset();
+#endif
 
     // Get the device type and check it
     // This also tests whether we are really connected to a device
@@ -128,15 +126,10 @@ bool RH_RF22::init()
     while (!(spiRead(RH_RF22_REG_04_INTERRUPT_STATUS2) & RH_RF22_ICHIPRDY))
     ;
 
-    // Enable interrupt output on the radio. Interrupt line will now go high until
-    // an interrupt occurs
     // When real IRQ is not used e.g. in Raspberry PI, then we need to enable only the most critical/relevant interrupt flags
     // Otherwise, when reading one time per pooling loop the REG_03_INTERRUPT_STATUS1 not all relevant flags might be set!
     // Alternatively (or additionally), the EZMAC register can be read to get some of the same flags
-#ifndef RH_RF22_IRQLESS
-    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
-    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
-#else
+#ifdef RH_RF22_IRQLESS
     spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENPKSENT | RH_RF22_ENPKVALID ); // | RH_RF22_ENCRCERROR);
     spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL); // | RH_RF22_ENSWDET);
 #endif
@@ -144,11 +137,15 @@ bool RH_RF22::init()
 
 
 #ifndef RH_RF22_IRQLESS
-
     // Add by Adrien van den Bossche <vandenbo@univ-tlse2.fr> for Teensy
     // ARM M4 requires the below. else pin interrupt doesn't work properly.
     // On all other platforms, its innocuous, belt and braces
     pinMode(_interruptPin, INPUT);
+
+    // Enable interrupt output on the radio. Interrupt line will now go high until
+    // an interrupt occurs
+    spiWrite(RH_RF22_REG_05_INTERRUPT_ENABLE1, RH_RF22_ENTXFFAEM | RH_RF22_ENRXFFAFULL | RH_RF22_ENPKSENT | RH_RF22_ENPKVALID | RH_RF22_ENCRCERROR | RH_RF22_ENFFERR);
+    spiWrite(RH_RF22_REG_06_INTERRUPT_ENABLE2, RH_RF22_ENPREAVAL);
 
     // Set up interrupt handler
     // Since there are a limited number of interrupt glue functions isr*() available,
@@ -173,7 +170,6 @@ bool RH_RF22::init()
         attachInterrupt(interruptNumber, isr2, FALLING);
     else
         return false; // Too many devices, not enough interrupt vectors
-
 #endif
 
     setModeIdle();
@@ -222,7 +218,6 @@ bool RH_RF22::init()
 }
 
 #ifndef RH_RF22_IRQLESS
-
 // C++ level interrupt handler for this instance
 void RH_RF22::handleInterrupt()
 {
@@ -259,37 +254,37 @@ void RH_RF22::handleInterrupt()
             restartTransmit();
         else if (_mode == RHModeRx)
             clearRxBuf();
-    //  Serial.println("IFFERROR");
+//	Serial.println("IFFERROR");  
     }
     // Caution, any delay here may cause a FF underflow or overflow
     if (_lastInterruptFlags[0] & RH_RF22_ITXFFAEM)
     {
         // See if more data has to be loaded into the Tx FIFO
         sendNextFragment();
-//      Serial.println("ITXFFAEM");
+//	Serial.println("ITXFFAEM"); 
     }
     if (_lastInterruptFlags[0] & RH_RF22_IRXFFAFULL)
     {
         // Caution, any delay here may cause a FF overflow
         // Read some data from the Rx FIFO
         readNextFragment();
-//      Serial.println("IRXFFAFULL");
+//	Serial.println("IRXFFAFULL");
     }
     if (_lastInterruptFlags[0] & RH_RF22_IEXT)
     {
         // This is not enabled by the base code, but users may want to enable it
         handleExternalInterrupt();
-//      Serial.println("IEXT");
+// 	Serial.println("IEXT"); 
     }
     if (_lastInterruptFlags[1] & RH_RF22_IWUT)
     {
         // This is not enabled by the base code, but users may want to enable it
         handleWakeupTimerInterrupt();
-//      Serial.println("IWUT");
+//	Serial.println("IWUT"); 
     }
     if (_lastInterruptFlags[0] & RH_RF22_IPKSENT)
     {
-//      Serial.println("IPKSENT");
+//	Serial.println("IPKSENT"); 
         _txGood++;
         // Transmission does not automatically clear the tx buffer.
         // Could retransmit if we wanted
@@ -302,6 +297,7 @@ void RH_RF22::handleInterrupt()
     }
     if (_lastInterruptFlags[0] & RH_RF22_ICRCERROR)
     {
+//	Serial.println("ICRCERR");  
         _rxBad++;
         clearRxBuf();
         resetRxFifo();
@@ -310,7 +306,7 @@ void RH_RF22::handleInterrupt()
     }
     if (_lastInterruptFlags[1] & RH_RF22_IPREAVAL)
     {
-//      Serial.println("IPREAVAL");
+//	Serial.println("IPREAVAL"); 
         _lastRssi = (int8_t)(-120 + ((spiRead(RH_RF22_REG_26_RSSI) / 2)));
         _lastPreambleTime = millis();
         resetRxFifo();
@@ -372,7 +368,6 @@ void RH_INTERRUPT_ATTR RH_RF22::isr2()
     _deviceForInterrupt[2]->handleInterrupt();
 #endif
 }
-
 #endif
 
 

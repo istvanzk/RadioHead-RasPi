@@ -22,6 +22,7 @@ bool RHSPIDriver::init()
 
     // Initialise the slave select pin
     // On Maple, this must be _after_ spi.begin
+
     // Sometimes we dont want to work the _slaveSelectPin here
     if (_slaveSelectPin != 0xff)
 	pinMode(_slaveSelectPin, OUTPUT);

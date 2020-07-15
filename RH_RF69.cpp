@@ -92,6 +92,7 @@ RH_RF69::RH_RF69(uint8_t slaveSelectPin, uint8_t interruptPin, RHGenericSPI& spi
     _idleMode = RH_RF69_OPMODE_MODE_STDBY;
 #ifndef RH_RF69_IRQLESS    
     _interruptPin = interruptPin;
+    _idleMode = RH_RF69_OPMODE_MODE_STDBY;
     _myInterruptIndex = 0xff; // Not allocated yet
 #endif    
 }

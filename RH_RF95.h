@@ -254,6 +254,7 @@
 #define RH_RF95_PA_DAC_DISABLE                        0x04
 #define RH_RF95_PA_DAC_ENABLE                         0x07
 
+
 /////////////////////////////////////////////////////////////////////
 /// \class RH_RF95 RH_RF95.h <RH_RF95.h>
 /// \brief Driver to send and receive unaddressed, unreliable datagrams via a LoRa
@@ -652,7 +653,7 @@ public:
     /// \return true on success
     bool printRegisters();
 
-    /// Sets all the registered required to configure the data modem in the RF95/96/97/98, including the bandwidth,
+    /// Sets all the registers required to configure the data modem in the radio, including the bandwidth, 
     /// spreading factor etc. You can use this to configure the modem with custom configurations if none of the
     /// canned configurations in ModemConfigChoice suit you.
     /// \param[in] config A ModemConfig structure containing values for the modem configuration registers.
