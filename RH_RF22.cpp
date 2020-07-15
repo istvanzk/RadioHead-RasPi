@@ -117,8 +117,8 @@ bool RH_RF22::init()
     if (   _deviceType != RH_RF22_DEVICE_TYPE_RX_TRX
         && _deviceType != RH_RF22_DEVICE_TYPE_TX)
     {
-//  Serial.print("unknown device type: ");
-//  Serial.println(_deviceType);
+    //Serial.print("unknown device type: ");
+    //Serial.println(_deviceType);
         return false;
     }
 
@@ -188,7 +188,7 @@ bool RH_RF22::init()
 
     // Configure the message headers
     // Here we set up the standard packet format for use by the RH_RF22 library
-    // 8 nibbles preamble
+    // 10 nibbles preamble
     // 2 SYNC words 2d, d4
     // Header length 4 (to, from, id, flags)
     // 1 octet of data length (0 to 255)
@@ -799,15 +799,13 @@ void RH_RF22::restartTransmit()
 {
     _mode = RHModeIdle;
     _txBufSentIndex = 0;
-//      Serial.println("Restart");
+    //Serial.println("Restart");
     startTransmit();
 }
 
 bool RH_RF22::send(const uint8_t* data, uint8_t len)
 {
     bool ret = true;
-
-    printf(" - Send - ");
 
     waitPacketSent(); // Make sure we dont interrupt an outgoing message
     setModeIdle(); // Prevent RX while filling the fifo
@@ -823,17 +821,11 @@ bool RH_RF22::send(const uint8_t* data, uint8_t len)
     if (!fillTxBuf(data, len))
     {
         ret = false;
-        printf(" - Send NOK TxBuff - \n");
     }
     else
     {
         startTransmit();
         ret = waitPacketSent();
-        if (ret)
-            printf(" - Send OK Tx - \n");
-        else
-            printf(" - Send NOK Tx - \n");
-
     }
     ATOMIC_BLOCK_END;
     return ret;
@@ -870,7 +862,6 @@ bool RH_RF22::waitPacketSent()
         }
         YIELD;
     }
-    printf(" - waitPacketSent - ");
 
     // A transmitter message has been fully sent
     if (ret)
@@ -899,7 +890,6 @@ bool RH_RF22::appendTxBuf(const uint8_t* data, uint8_t len)
     memcpy(_buf + _bufLen, data, len);
     _bufLen += len;
     ATOMIC_BLOCK_END;
-//    printBuffer("txbuf:", _buf, _bufLen);
     return true;
 }
 
@@ -914,7 +904,7 @@ void RH_RF22::sendNextFragment()
         if (len > (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1))
             len = (RH_RF22_FIFO_SIZE - RH_RF22_TXFFAEM_THRESHOLD - 1);
         spiBurstWrite(RH_RF22_REG_7F_FIFO_ACCESS, _buf + _txBufSentIndex, len);
-//  printBuffer("frag:", _buf  + _txBufSentIndex, len);
+        //printBuffer("frag:", _buf  + _txBufSentIndex, len);
         _txBufSentIndex += len;
     }
 }
