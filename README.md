@@ -1,17 +1,17 @@
-RadioHead Packet Radio library for embedded microprocessors - Fork for RFM22B support on Raspberry PI
-====================================================================================================
+RadioHead Packet Radio library for embedded microprocessors - Fork for RFM22B support on Raspberry PI, July 2020
+================================================================================================================
 
-### Features added with this fork, August-September 2019.
+### Features added with this fork
 
-This is a fork of the initial fork by [Charles-Henri Hallard][1] for Raspberry PI support of the original [RadioHead Packet Radio library][2] for embedded microprocessors by Mike McCauley. The [RadioHead Packet Radio library][2] provides a complete object-oriented library for sending and receiving packetized messages via a variety of common data radios and other transports on a range of embedded microprocessors.
+This is a modification of the initial fork by [Charles-Henri Hallard][1] for Raspberry PI support of the original [RadioHead Packet Radio library][2]. The [RadioHead Packet Radio library][2] for embedded microprocessors by Mike McCauley provides a complete object-oriented library for sending and receiving packetized messages via a variety of common data radios and other transports on a range of embedded microprocessors.
 
-**Please read the full documentation and licensing for the original code by [Mike McCauley][2]. This fork has been updated based on the orginal RadioHead Packet Radio library [version 1.92][3]**
+**Please read the full documentation and licensing for the original code by [Mike McCauley][2]. This fork has been merged with the orginal RadioHead Packet Radio library [version 1.108][3]**
 
 
 **Compatible boards**
 
-- Kept compatibility with RF69 and RF95 based radio modules on Raspberry PI - See original fork by [Charles-Henri Hallard][1].
-- Added compatibility with RFM22B based radio modules on Raspberry PI.
+- Kept compatibility with RF69 and RF95 based radio modules on Raspberry PI. *NOT Tested!* - Custom RHutil code moved to RadioHead/RHutil_rf69_rf95. See original fork by [Charles-Henri Hallard][1].
+- Added compatibility with RFM22B based radio modules on Raspberry PI - Custom RHutil code available in RadioHead/RHutil_rf22b:
   - Sample code for Raspberry Pi for HopeRF RFM22B based radio modules, e.g. [RFM22B][4], in a new [RadioHead/examples/raspi/rf22b][5] folder.
   - Based on sample code for RFM69HCW on Raspberry Pi by [Charles-Henri Hallard][1] and sample code for RF24 on Arduino by [Mike McCauley][3].
 
@@ -222,7 +222,7 @@ For technical reasons, the message format is not protocol compatible with the
 
 [1]: https://github.com/hallard/RadioHead
 [2]: http://www.airspayce.com/mikem/arduino/RadioHead/
-[3]: http://www.airspayce.com/mikem/arduino/RadioHead/RadioHead-1.92.zip
+[3]: http://www.airspayce.com/mikem/arduino/RadioHead/RadioHead-1.108.zip
 
 [4]: https://www.sparkfun.com/products/12030
 [5]: https://github.com/istvanzk/RadioHead/tree/master/examples/raspi/rf22b

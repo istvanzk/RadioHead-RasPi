@@ -9,6 +9,7 @@
 //
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011 Mike McCauley
+// Adapted for RF22B on Raspeberry PI by Istvan Z. Kovacs, 2019
 // $Id: RHReliableDatagram.cpp,v 1.18 2018/11/08 02:31:43 mikem Exp $
 
 #include <RHReliableDatagram.h>
@@ -71,7 +72,7 @@ bool RHReliableDatagram::sendtoWait(uint8_t* buf, uint8_t len, uint8_t address)
 
         sendto(buf, len, address);
 #if (RH_PLATFORM == RH_PLATFORM_RASPI)
-        // _driver.send(...) already uses waitPAcketSent()
+        // _driver.send(...) already uses waitPacketSent()
 #else
         waitPacketSent();
 #endif
@@ -215,7 +216,7 @@ void RHReliableDatagram::acknowledge(uint8_t id, uint8_t from)
     uint8_t ack = '!';
     sendto(&ack, sizeof(ack), from);
 #if (RH_PLATFORM == RH_PLATFORM_RASPI)
-    // _driver.send(...) already uses waitPAcketSent()
+    // _driver.send(...) already uses waitPacketSent()
 #else
     waitPacketSent();
 #endif

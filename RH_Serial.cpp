@@ -1,12 +1,14 @@
 // RH_Serial.cpp
 //
 // Copyright (C) 2014 Mike McCauley
-// $Id: RH_Serial.cpp,v 1.16 2018/11/15 01:10:48 mikem Exp $
+// $Id: RH_Serial.cpp,v 1.17 2020/01/07 23:35:02 mikem Exp $
 
 #include <RH_Serial.h>
 #if (RH_PLATFORM == RH_PLATFORM_STM32F2)
 #elif defined (ARDUINO_ARCH_STM32F4)
  #include <libmaple/HardwareSerial.h>
+#elif (RH_PLATFORM == RH_PLATFORM_ATTINY_MEGA)
+ #include <UART.h>
 #else
  #include <HardwareSerial.h>
 #endif
@@ -244,4 +246,4 @@ uint8_t RH_Serial::maxMessageLength()
     return RH_SERIAL_MAX_MESSAGE_LEN;
 }
 
-#endif // RH_PLATFORM_ATTINY
+#endif // HAVE_SERIAL

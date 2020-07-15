@@ -11,8 +11,8 @@ INCLUDE       = -I$(RADIOHEADBASE)
 
 all: rf69_client rf69_server
 
-RasPi.o: $(RADIOHEADBASE)/RHutil/RasPi.cpp
-				$(CC) $(CFLAGS) -c $(RADIOHEADBASE)/RHutil/RasPi.cpp $(INCLUDE)
+RasPi.o: $(RADIOHEADBASE)/RHutil_rf69_rf95/RasPi.cpp
+				$(CC) $(CFLAGS) -c $(RADIOHEADBASE)/RHutil_rf69_rf95/RasPi.cpp $(INCLUDE)
 
 rf69_client.o: rf69_client.cpp
 				$(CC) $(CFLAGS) -c $(INCLUDE) $<

@@ -1,7 +1,7 @@
 // RH_RF95.cpp
 //
 // Copyright (C) 2011 Mike McCauley
-// $Id: RH_RF95.cpp,v 1.20 2019/07/14 00:18:48 mikem Exp mikem $
+// $Id: RH_RF95.cpp,v 1.26 2020/06/15 23:39:39 mikem Exp mikem $
 
 #include <RH_RF95.h>
 
@@ -22,6 +22,7 @@ PROGMEM static const RH_RF95::ModemConfig MODEM_CONFIG_TABLE[] =
     { 0x92,   0x74,    0x04}, // Bw500Cr45Sf128, AGC enabled
     { 0x48,   0x94,    0x04}, // Bw31_25Cr48Sf512, AGC enabled
     { 0x78,   0xc4,    0x0c}, // Bw125Cr48Sf4096, AGC enabled
+    { 0x72,   0xb4,    0x04}, // Bw125Cr45Sf2048, AGC enabled
 
 };
 
@@ -34,6 +35,8 @@ RH_RF95::RH_RF95(uint8_t slaveSelectPin, uint8_t interruptPin, RHGenericSPI& spi
     _interruptPin = interruptPin;
     _myInterruptIndex = 0xff; // Not allocated yet
 #endif
+    _enableCRC = true;
+    _useRFO = false;
 }
 
 bool RH_RF95::init()
@@ -42,20 +45,23 @@ bool RH_RF95::init()
 	return false;
 
 #ifndef RH_RF95_IRQLESS
+    // For some subclasses (eg RH_ABZ)  we dont want to set up interrupt
+    int interruptNumber = NOT_AN_INTERRUPT;
+    if (_interruptPin != RH_INVALID_PIN)
+    {
     // Determine the interrupt number that corresponds to the interruptPin
-    int interruptNumber = digitalPinToInterrupt(_interruptPin);
+	interruptNumber = digitalPinToInterrupt(_interruptPin);
     if (interruptNumber == NOT_AN_INTERRUPT)
 	return false;
 #ifdef RH_ATTACHINTERRUPT_TAKES_PIN_NUMBER
     interruptNumber = _interruptPin;
 #endif
-#endif
 
-#ifndef RH_RF95_IRQLESS
     // Tell the low level SPI interface we will use SPI within this interrupt
     spiUsingInterrupt(interruptNumber);
+    }
 #endif
-
+    
     // No way to check the device type :-(
 
     // Set sleep mode, so we can also set LORA mode:
@@ -70,6 +76,8 @@ bool RH_RF95::init()
 
 #ifndef RH_RF95_IRQLESS
 
+    if (_interruptPin != RH_INVALID_PIN)
+    {
     // Add by Adrien van den Bossche <vandenbo@univ-tlse2.fr> for Teensy
     // ARM M4 requires the below. else pin interrupt doesn't work properly.
     // On all other platforms, its innocuous, belt and braces
@@ -78,7 +86,7 @@ bool RH_RF95::init()
     // Set up interrupt handler
     // Since there are a limited number of interrupt glue functions isr*() available,
     // we can only support a limited number of devices simultaneously
-    // ON some devices, notably most Arduinos, the interrupt pin passed in is actuallt the
+	// ON some devices, notably most Arduinos, the interrupt pin passed in is actually the 
     // interrupt number. You have to figure out the interruptnumber-to-interruptpin mapping
     // yourself based on knwledge of what Arduino board you are running on.
     if (_myInterruptIndex == 0xff)
@@ -90,6 +98,7 @@ bool RH_RF95::init()
 	    return false; // Too many devices, not enough interrupt vectors
     }
     _deviceForInterrupt[_myInterruptIndex] = this;
+
     if (_myInterruptIndex == 0)
 	attachInterrupt(interruptNumber, isr0, RISING);
     else if (_myInterruptIndex == 1)
@@ -98,7 +107,7 @@ bool RH_RF95::init()
 	attachInterrupt(interruptNumber, isr2, RISING);
     else
 	return false; // Too many devices, not enough interrupt vectors
-
+    }
 #endif
 
     // Set up FIFO
@@ -136,21 +145,49 @@ bool RH_RF95::init()
 #ifndef RH_RF95_IRQLESS
 void RH_RF95::handleInterrupt()
 {
+    // we need the RF95 IRQ to be level triggered, or we ……have slim chance of missing events
+    // https://github.com/geeksville/Meshtastic-esp32/commit/78470ed3f59f5c84fbd1325bcff1fd95b2b20183
+
     // Read the interrupt register
     uint8_t irq_flags = spiRead(RH_RF95_REG_12_IRQ_FLAGS);
     // Read the RegHopChannel register to check if CRC presence is signalled
     // in the header. If not it might be a stray (noise) packet.*
-    uint8_t crc_present = spiRead(RH_RF95_REG_1C_HOP_CHANNEL);
+    uint8_t hop_channel = spiRead(RH_RF95_REG_1C_HOP_CHANNEL);
+//    Serial.println(irq_flags, HEX);
+//    Serial.println(_mode, HEX);
+//    Serial.println(hop_channel, HEX);
+//    Serial.println(_enableCRC, HEX);
 
+    // ack all interrupts, 
+    // Sigh: on some processors, for some unknown reason, doing this only once does not actually
+    // clear the radio's interrupt flag. So we do it twice. Why? (kevinh - I think the root cause we want level
+    // triggered interrupts here - not edge.  Because edge allows us to miss handling secondard interrupts that occurred
+    // while this ISR was running.  Better to instead, configure the interrupts as level triggered and clear pending
+    // at the _beginning_ of the ISR.  If any interrupts occur while handling the ISR, the signal will remain asserted and
+    // our ISR will be reinvoked to handle that case)
+    // kevinh: turn this off until root cause is known, because it can cause missed interrupts!
+    // spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
+    spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
+
+    // error if:
+    // timeout
+    // bad CRC
+    // CRC is required but it is not present
     if (_mode == RHModeRx
-	&& ((irq_flags & (RH_RF95_RX_TIMEOUT | RH_RF95_PAYLOAD_CRC_ERROR))
-	    | !(crc_present & RH_RF95_RX_PAYLOAD_CRC_IS_ON)))
+	&& (   (irq_flags & (RH_RF95_RX_TIMEOUT | RH_RF95_PAYLOAD_CRC_ERROR))
+	    || (_enableCRC && !(hop_channel & RH_RF95_RX_PAYLOAD_CRC_IS_ON)) ))
 //    if (_mode == RHModeRx && irq_flags & (RH_RF95_RX_TIMEOUT | RH_RF95_PAYLOAD_CRC_ERROR))
     {
+//	Serial.println("E");
 	_rxBad++;
+        clearRxBuf();
     }
+    // It is possible to get RX_DONE and CRC_ERROR and VALID_HEADER all at once
+    // so this must be an else
     else if (_mode == RHModeRx && irq_flags & RH_RF95_RX_DONE)
     {
+	// Packet received, no CRC error
+//	Serial.println("R");
 	// Have received a packet
 	uint8_t len = spiRead(RH_RF95_REG_13_RX_NB_BYTES);
 
@@ -185,18 +222,25 @@ void RH_RF95::handleInterrupt()
     }
     else if (_mode == RHModeTx && irq_flags & RH_RF95_TX_DONE)
     {
+ //	Serial.println("T");
 	_txGood++;
 	setModeIdle();
     }
     else if (_mode == RHModeCad && irq_flags & RH_RF95_CAD_DONE)
     {
+//	Serial.println("C");
         _cad = irq_flags & RH_RF95_CAD_DETECTED;
         setModeIdle();
     }
+    else
+    {
+//	Serial.println("?");
+    }
+	
     // Sigh: on some processors, for some unknown reason, doing this only once does not actually
     // clear the radio's interrupt flag. So we do it twice. Why?
-    spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
-    spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
+//    spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
+//    spiWrite(RH_RF95_REG_12_IRQ_FLAGS, 0xff); // Clear all IRQ flags
 }
 #endif
 
@@ -391,6 +435,7 @@ void RH_RF95::setModeIdle()
 {
     if (_mode != RHModeIdle)
     {
+    modeWillChange(RHModeIdle);
 	spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_STDBY);
 	_mode = RHModeIdle;
     }
@@ -400,6 +445,7 @@ bool RH_RF95::sleep()
 {
     if (_mode != RHModeSleep)
     {
+ 	modeWillChange(RHModeSleep);       
 	spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_SLEEP);
 	_mode = RHModeSleep;
     }
@@ -410,6 +456,7 @@ void RH_RF95::setModeRx()
 {
     if (_mode != RHModeRx)
     {
+	modeWillChange(RHModeRx);
 	spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_RXCONTINUOUS);
 	spiWrite(RH_RF95_REG_40_DIO_MAPPING1, 0x00); // Interrupt on RxDone
 	_mode = RHModeRx;
@@ -420,6 +467,7 @@ void RH_RF95::setModeTx()
 {
     if (_mode != RHModeTx)
     {
+    modeWillChange(RHModeTx);
 	spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_TX);
 	spiWrite(RH_RF95_REG_40_DIO_MAPPING1, 0x40); // Interrupt on TxDone
 	_mode = RHModeTx;
@@ -428,27 +476,32 @@ void RH_RF95::setModeTx()
 
 void RH_RF95::setTxPower(int8_t power, bool useRFO)
 {
-    // Sigh, different behaviours depending on whther the module use PA_BOOST or the RFO pin
+    _useRFO = useRFO;
+
+    // Sigh, different behaviours depending on whether the module use PA_BOOST or the RFO pin
     // for the transmitter output
     if (useRFO)
     {
-	if (power > 14)
-	    power = 14;
-	if (power < -1)
-	    power = -1;
-	spiWrite(RH_RF95_REG_09_PA_CONFIG, RH_RF95_MAX_POWER | (power + 1));
+	if (power > 15)
+	    power = 15;
+	if (power < 0)
+	    power = 0;
+	// Set the MaxPower register to 0x7 => MaxPower = 10.8 + 0.6 * 7 = 15dBm
+	// So Pout = Pmax - (15 - power) = 15 - 15 + power
+	spiWrite(RH_RF95_REG_09_PA_CONFIG, RH_RF95_MAX_POWER | power);
+	spiWrite(RH_RF95_REG_4D_PA_DAC, RH_RF95_PA_DAC_DISABLE);
     }
     else
     {
-	if (power > 23)
-	    power = 23;
-	if (power < 5)
-	    power = 5;
+	if (power > 20)
+	    power = 20;
+	if (power < 2)
+	    power = 2;
 
 	// For RH_RF95_PA_DAC_ENABLE, manual says '+20dBm on PA_BOOST when OutputPower=0xf'
-	// RH_RF95_PA_DAC_ENABLE actually adds about 3dBm to all power levels. We will us it
-	// for 21, 22 and 23dBm
-	if (power > 20)
+	// RH_RF95_PA_DAC_ENABLE actually adds about 3dBm to all power levels. We will use it
+	// for 8, 19 and 20dBm
+	if (power > 17)
 	{
 	    spiWrite(RH_RF95_REG_4D_PA_DAC, RH_RF95_PA_DAC_ENABLE);
 	    power -= 3;
@@ -460,11 +513,8 @@ void RH_RF95::setTxPower(int8_t power, bool useRFO)
 
 	// RFM95/96/97/98 does not have RFO pins connected to anything. Only PA_BOOST
 	// pin is connected, so must use PA_BOOST
-	// Pout = 2 + OutputPower.
-	// The documentation is pretty confusing on this topic: PaSelect says the max power is 20dBm,
-	// but OutputPower claims it would be 17dBm.
-	// My measurements show 20dBm is correct
-	spiWrite(RH_RF95_REG_09_PA_CONFIG, RH_RF95_PA_SELECT | (power-5));
+	// Pout = 2 + OutputPower (+3dBm if DAC enabled)
+	spiWrite(RH_RF95_REG_09_PA_CONFIG, RH_RF95_PA_SELECT | (power-2));
     }
 }
 
@@ -501,6 +551,7 @@ bool RH_RF95::isChannelActive()
     // Set mode RHModeCad
     if (_mode != RHModeCad)
     {
+        modeWillChange(RHModeCad);
         spiWrite(RH_RF95_REG_01_OP_MODE, RH_RF95_MODE_CAD);
         spiWrite(RH_RF95_REG_40_DIO_MAPPING1, 0x80); // Interrupt on CadDone
         _mode = RHModeCad;
@@ -512,12 +563,23 @@ bool RH_RF95::isChannelActive()
     return _cad;
 }
 
-void RH_RF95::enableTCXO()
+void RH_RF95::enableTCXO(bool on)
 {
-    while ((spiRead(RH_RF95_REG_4B_TCXO) & RH_RF95_TCXO_TCXO_INPUT_ON) != RH_RF95_TCXO_TCXO_INPUT_ON)
+    if (on)
     {
-	sleep();
-	spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) | RH_RF95_TCXO_TCXO_INPUT_ON));
+	while ((spiRead(RH_RF95_REG_4B_TCXO) & RH_RF95_TCXO_TCXO_INPUT_ON) != RH_RF95_TCXO_TCXO_INPUT_ON)
+	{
+	    sleep();
+	    spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) | RH_RF95_TCXO_TCXO_INPUT_ON));
+	}
+    }
+    else
+    {
+	while ((spiRead(RH_RF95_REG_4B_TCXO) & RH_RF95_TCXO_TCXO_INPUT_ON))
+	{
+	    sleep();
+	    spiWrite(RH_RF95_REG_4B_TCXO, (spiRead(RH_RF95_REG_4B_TCXO) & ~RH_RF95_TCXO_TCXO_INPUT_ON));
+	}
     }
 }
 
@@ -621,9 +683,11 @@ void RH_RF95::setSignalBandwidth(long sbw)
 
 void RH_RF95::setCodingRate4(uint8_t denominator)
 {
-    int cr;
-
-    if (denominator <= 5)
+    int cr = RH_RF95_CODING_RATE_4_5;
+ 
+//    if (denominator <= 5)
+//	cr = RH_RF95_CODING_RATE_4_5;
+    if (denominator == 6)
 	cr=RH_RF95_CODING_RATE_4_5;
     else if (denominator == 6)
 	cr = RH_RF95_CODING_RATE_4_6;
@@ -679,5 +743,6 @@ void RH_RF95::setPayloadCRC(bool on)
 	spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, current | RH_RF95_PAYLOAD_CRC_ON);
     else
 	spiWrite(RH_RF95_REG_1E_MODEM_CONFIG2, current);
+    _enableCRC = on;
 }
 

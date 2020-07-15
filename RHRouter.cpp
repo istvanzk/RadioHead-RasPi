@@ -9,7 +9,7 @@
 //
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2011 Mike McCauley
-// $Id: RHRouter.cpp,v 1.8 2017/06/25 09:41:17 mikem Exp $
+// $Id: RHRouter.cpp,v 1.9 2019/09/06 04:40:40 mikem Exp $
 
 #include <RHRouter.h>
 
@@ -21,6 +21,7 @@ RHRouter::RHRouter(RHGenericDriver& driver, uint8_t thisAddress)
     : RHReliableDatagram(driver, thisAddress)
 {
     _max_hops = RH_DEFAULT_MAX_HOPS;
+    _isa_router = true;
     clearRoutingTable();
 }
 
@@ -40,6 +41,11 @@ void RHRouter::setMaxHops(uint8_t max_hops)
     _max_hops = max_hops;
 }
 
+////////////////////////////////////////////////////////////////////
+void RHRouter::setIsaRouter(bool isa_router)
+{
+    _isa_router = isa_router;
+}
 ////////////////////////////////////////////////////////////////////
 void RHRouter::addRouteTo(uint8_t dest, uint8_t next_hop, uint8_t state)
 {
@@ -282,7 +288,10 @@ bool RHRouter::recvfromAck(uint8_t* buf, uint8_t* len, uint8_t* source, uint8_t*
 	    // Maybe it has to be routed to the next hop
 	    // REVISIT: if it fails due to no route or unable to deliver to the next hop, 
 	    // tell the originator. BUT HOW?
-	    route(&_tmpMessage, tmpMessageLen);
+	    
+	    // If we are forwarding packets, do so. Otherwise, drop.
+	    if (_isa_router)
+	        route(&_tmpMessage, tmpMessageLen);
 	}
 	// Discard it and maybe wait for another
     }

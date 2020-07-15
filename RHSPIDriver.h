@@ -1,7 +1,7 @@
 // RHSPIDriver.h
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2014 Mike McCauley
-// $Id: RHSPIDriver.h,v 1.10 2015/12/16 04:55:33 mikem Exp $
+// $Id: RHSPIDriver.h,v 1.16 2020/06/15 23:39:39 mikem Exp mikem $
 
 #ifndef RHSPIDriver_h
 #define RHSPIDriver_h
@@ -106,6 +106,15 @@ public:
     void spiUsingInterrupt(uint8_t interruptNumber);
 
     protected:
+    
+    // Override this if you need an unusual way of selecting the slave before SPI transactions
+    // The default uses digitalWrite(_slaveSelectPin, LOW)
+    virtual void selectSlave();
+    
+    // Override this if you need an unusual way of selecting the slave before SPI transactions
+    // The default uses digitalWrite(_slaveSelectPin, HIGH)
+    virtual void deselectSlave();
+    
     /// Reference to the RHGenericSPI instance to use to transfer data with the SPI device
     RHGenericSPI&       _spi;
 

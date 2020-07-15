@@ -11,13 +11,16 @@ INCLUDE       = -I$(RADIOHEADBASE)
 
 all: rf22b_client rf22b_server rf22b_reliable_datagram_client rf22b_reliable_datagram_server
 
-RasPi.o: $(RADIOHEADBASE)/RHutil/RasPi.cpp
-				$(CC) $(CFLAGS) -c $(RADIOHEADBASE)/RHutil/RasPi.cpp $(INCLUDE)
+RasPi.o: $(RADIOHEADBASE)/RHutil_rf22b/RasPi.cpp
+				$(CC) $(CFLAGS) -c $(RADIOHEADBASE)/RHutil_rf22b/RasPi.cpp $(INCLUDE)
 
 rf22b_client.o: rf22b_client.cpp
 				$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
 rf22b_server.o: rf22b_server.cpp
+				$(CC) $(CFLAGS) -c $(INCLUDE) $<
+
+rf22b_server_mq.o: rf22b_server_mq.cpp
 				$(CC) $(CFLAGS) -c $(INCLUDE) $<
 
 rf22b_reliable_datagram_client.o: rf22b_reliable_datagram_client.cpp
@@ -52,6 +55,9 @@ rf22b_client: rf22b_client.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o
 
 rf22b_server: rf22b_server.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o
 				$(CC) $^ $(LIBS) -o rf22b_server
+
+rf22b_server_mq: rf22b_server_mq.o RH_RF22.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o
+				$(CC) $^ $(LIBS) -o rf22b_server_mq
 
 rf22b_reliable_datagram_client: rf22b_reliable_datagram_client.o RH_RF22.o RHDatagram.o RHReliableDatagram.o RasPi.o RHHardwareSPI.o RHGenericDriver.o RHGenericSPI.o RHSPIDriver.o
 				$(CC) $^ $(LIBS) -o rf22b_reliable_datagram_client

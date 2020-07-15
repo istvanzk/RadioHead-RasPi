@@ -1,7 +1,7 @@
 // RH_RF69.h
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2014 Mike McCauley
-// $Id: RH_RF69.h,v 1.37 2019/07/14 00:18:48 mikem Exp mikem $
+// $Id: RH_RF69.h,v 1.38 2020/04/09 23:40:34 mikem Exp $
 //
 ///
 
@@ -279,6 +279,30 @@
 #define RH_RF69_PACKETCONFIG1_ADDRESSFILTERING_NODE_BC      0x04
 #define RH_RF69_PACKETCONFIG1_ADDRESSFILTERING_RESERVED     0x06
 
+// RH_RF69_REG_3B_AUTOMODES
+#define RH_RF69_AUTOMODE_ENTER_COND_NONE                    0x00
+#define RH_RF69_AUTOMODE_ENTER_COND_FIFO_NOT_EMPTY          0x20
+#define RH_RF69_AUTOMODE_ENTER_COND_FIFO_LEVEL              0x40
+#define RH_RF69_AUTOMODE_ENTER_COND_CRC_OK                  0x60
+#define RH_RF69_AUTOMODE_ENTER_COND_PAYLOAD_READY           0x80
+#define RH_RF69_AUTOMODE_ENTER_COND_SYNC_ADDRESS            0xa0
+#define RH_RF69_AUTOMODE_ENTER_COND_PACKET_SENT             0xc0
+#define RH_RF69_AUTOMODE_ENTER_COND_FIFO_EMPTY              0xe0
+
+#define RH_RF69_AUTOMODE_EXIT_COND_NONE                     0x00
+#define RH_RF69_AUTOMODE_EXIT_COND_FIFO_EMPTY               0x04
+#define RH_RF69_AUTOMODE_EXIT_COND_FIFO_LEVEL               0x08
+#define RH_RF69_AUTOMODE_EXIT_COND_CRC_OK                   0x0c
+#define RH_RF69_AUTOMODE_EXIT_COND_PAYLOAD_READY            0x10
+#define RH_RF69_AUTOMODE_EXIT_COND_SYNC_ADDRESS             0x14
+#define RH_RF69_AUTOMODE_EXIT_COND_PACKET_SENT              0x18
+#define RH_RF69_AUTOMODE_EXIT_COND_TIMEOUT                  0x1c
+
+#define RH_RF69_AUTOMODE_INTERMEDIATE_MODE_SLEEP            0x00
+#define RH_RF69_AUTOMODE_INTERMEDIATE_MODE_STDBY            0x01
+#define RH_RF69_AUTOMODE_INTERMEDIATE_MODE_RX               0x02
+#define RH_RF69_AUTOMODE_INTERMEDIATE_MODE_TX               0x03
+
 // RH_RF69_REG_3C_FIFOTHRESH
 #define RH_RF69_FIFOTHRESH_TXSTARTCONDITION_NOTEMPTY        0x80
 #define RH_RF69_FIFOTHRESH_FIFOTHRESHOLD                    0x7f
@@ -540,6 +564,27 @@
 /// and initialise with
 /// \code
 /// RH_RF69 driver(15, 0);
+/// \endcode
+/// If you are connecting an RF69 to a Sparkfun nRF52832 Breakout board 
+/// with Arduino 1.8.9 with board:
+/// "SparkFun nRF52 Boards by Sparkfun Electronics version 0.2.3",
+/// you can connect like this:
+/// \code
+///                 nRF52832     RFM69W
+///                 GND----------GND   (ground in)
+///                 3V3----------3.3V  (3.3V in)
+/// interrupt 0 pin 02-----------DIO0  (interrupt request out)
+///          SS pin 08-----------NSS   (chip select in)
+///     SCK SPI pin 13-----------SCK   (SPI clock in)
+///    MOSI SPI pin 11-----------MOSI  (SPI Data in)
+///    MISO SPI pin 12-----------MISO  (SPI Data out)
+/// \endcode
+/// and initialise with
+/// \code
+/// RHSoftwareSPI softwarespi;
+/// RH_RF69 driver(8, 2, softwarespi);
+/// and inside your setup() function:
+///    softwarespi.setPins(12, 11, 13);
 /// \endcode
 ///
 /// It is possible to have 2 or more radios connected to one Arduino, provided
