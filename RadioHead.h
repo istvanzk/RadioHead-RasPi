@@ -1490,6 +1490,8 @@ these examples and explanations and extend them to suit your needs.
  #define PROGMEM
  #if (__has_include (<pigpio.h>))
   #include <RHutil_pigpio/RasPi.h>
+ #elif (__has_include (<bcm2835.h>))
+  #include <RHutil_rf22b/RasPi.h> 
  #else
   #include <RHutil/RasPi.h>
  #endif
