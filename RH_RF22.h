@@ -1438,8 +1438,6 @@ protected:
     /// of the Tx buffer after a atransmission failure
     void           restartTransmit();
 
-    void           setThisAddress(uint8_t thisAddress);
-
     /// Sets the radio operating mode for the case when the driver is idle (ie not
     /// transmitting or receiving), allowing you to control the idle mode power requirements
     /// at the expense of slower transitions to transmit and receive modes.
@@ -1514,9 +1512,9 @@ protected:
 /// @example rf22_client.pde
 /// @example rf22_server.pde
 /// @example rf22_cw.ino
-/// @example raspi/rf22b/rf22b_client.cpp
-/// @example raspi/rf22b/rf22b_server.cpp
-/// @example raspi/rf22b/rf22b_reliable_datagram_client.cpp
-/// @example raspi/rf22b/rf22b_reliable_datagram_server.cpp
+/// @example raspi/rf22b_izk/rf22b_client.cpp
+/// @example raspi/rf22b_izk/rf22b_server.cpp
+/// @example raspi/rf22b_izk/rf22b_reliable_datagram_client.cpp
+/// @example raspi/rf22b_izk/rf22b_reliable_datagram_server.cpp
 
 #endif
