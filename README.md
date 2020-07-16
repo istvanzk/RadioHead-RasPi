@@ -11,13 +11,13 @@ This is a modification of the initial fork by [Charles-Henri Hallard][1] for Ras
 **Compatible boards**
 
 - Kept compatibility with RF69 and RF95 based radio modules on Raspberry PI. *NOT Tested!* - Custom RHutil code moved to RadioHead/RHutil_rf69_rf95. See original fork by [Charles-Henri Hallard][1].
+ - Based on sample code for RFM69HCW on Raspberry Pi by [Charles-Henri Hallard][1] and sample code for RF24 on Arduino by [Mike McCauley][3].
 - Added compatibility with RFM22B based radio modules on Raspberry PI - Custom RHutil code available in RadioHead/RHutil_rf22b:
   - Main code modified: RHSPIDriver.cpp/h, RHReliableDatagram.cpp, RH_RF22.cpp/h, RadioHead.h 
   - Sample code for Raspberry Pi for HopeRF RFM22B based radio modules, e.g. [RFM22B][4], in a new [RadioHead/examples/raspi/rf22b_izk][5] folder.
-  - Based on sample code for RFM69HCW on Raspberry Pi by [Charles-Henri Hallard][1] and sample code for RF24 on Arduino by [Mike McCauley][3].
+ 
 
-
-#### Installation and use on Raspberry PI
+### Installation and use on Raspberry PI
 
 Clone repository
 ```shell
