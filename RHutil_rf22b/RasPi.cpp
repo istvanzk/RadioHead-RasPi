@@ -100,7 +100,8 @@ void digitalWrite(uint8_t pin, uint8_t value)
   bcm2835_gpio_write(pin,value);
 }
 
-unsigned char digitalRead(uint8_t pin) {
+unsigned char digitalRead(uint8_t pin) 
+{
   if (pin == NOT_A_PIN)
     return 0;
 
@@ -205,34 +206,38 @@ void SerialSimulator::begin(int baud)
 
 size_t SerialSimulator::println(const char* s)
 {
-  print(s);
+  size_t charsPrinted = 0;
+  charsPrinted = print(s);
   printf("\n");
+  return charsPrinted + 1;
 }
 
 size_t SerialSimulator::print(const char* s)
 {
-  printf(s);
+  return (size_t)printf(s);
 }
 
 size_t SerialSimulator::print(unsigned int n, int base)
 {
   if (base == DEC)
-    printf("%d", n);
+    return (size_t)printf("%d", n);
   else if (base == HEX)
-    printf("%02x", n);
+    return (size_t)printf("%02x", n);
   else if (base == OCT)
-    printf("%o", n);
+    return (size_t)printf("%o", n);
   // TODO: BIN
+  else
+    return 0;  
 }
 
 size_t SerialSimulator::print(char ch)
 {
-  printf("%c", ch);
+  return (size_t)printf("%c", ch);
 }
 
 size_t SerialSimulator::println(char ch)
 {
-  printf("%c\n", ch);
+  return (size_t)printf("%c\n", ch);
 }
 
 size_t SerialSimulator::print(unsigned char ch, int base)
@@ -242,8 +247,10 @@ size_t SerialSimulator::print(unsigned char ch, int base)
 
 size_t SerialSimulator::println(unsigned char ch, int base)
 {
-  print((unsigned int)ch, base);
+  size_t charsPrinted = 0;
+  charsPrinted = print((unsigned int)ch, base);
   printf("\n");
+  return charsPrinted + 1;
 }
 
 #endif

@@ -36,7 +36,7 @@ typedef unsigned char byte;
 
 // No memcpy_P Raspberry PI
 #ifndef memcpy_P
-#define memcpy_P memcpy
+  #define memcpy_P memcpy
 #endif
 
 class SPIClass
