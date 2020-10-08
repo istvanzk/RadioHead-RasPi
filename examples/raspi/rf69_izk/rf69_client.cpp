@@ -12,18 +12,14 @@
 // Contributed by Charles-Henri Hallard based on sample RH_NRF24 by Mike Poublon
 // Contributed by Istvan Z. Kovacs based on code rf22b_client.cpp for Raspberry Pi
 
-// Packet Format - excerpt from RF_rf69.h
-// All messages sent and received by this Driver must conform to this packet format:
-// - 8 nibbles (4 octets) PREAMBLE
-// - 2 octets SYNC 0x2d, 0xd4
+// Packet Format - excerpt from RH_RF69.h
+// All messages sent and received by this RH_RF69 Driver conform to this packet format:
+// - 4 octets PREAMBLE
+// - 2 octets SYNC 0x2d, 0xd4 (configurable, so you can use this as a network filter)
+// - 1 octet RH_RF69 payload length
 // - 4 octets HEADER: (TO, FROM, ID, FLAGS)
-// - 1 octet LENGTH (0 to 255), number of octets in DATA
-// - 0 to 255 octets DATA
-// - 2 octets CRC computed with CRC16(IBM), computed on HEADER, LENGTH and DATA
-//
-// For technical reasons, the message format is not protocol compatible with the
-// 'HopeRF Radio Transceiver Message Library for Arduino' http://www.airspayce.com/mikem/arduino/HopeRF from the same author.
-// Nor is it compatible with 'Virtual Wire' http://www.airspayce.com/mikem/arduino/VirtualWire.pdf also from the same author.
+// - 0 to 60 octets DATA 
+// - 2 octets CRC computed with CRC16(IBM), computed on HEADER and DATA
 
 
 #include <bcm2835.h>
@@ -44,7 +40,7 @@
 
 // Our RFM69HCW Configuration
 #define RF_FREQUENCY  434.00
-#define RF_TXPOW      RH_RF69_TXPOW_11DBM
+#define RF_TXPOW      14 // since the radio is the high power HCW model, the Tx power is set in the range 14 to 20
 #define RF_GROUP_ID   22 // All devices
 #define RF_GATEWAY_ID 1  // Server ID (where to send packets)
 #define RF_NODE_ID    10 // Client ID (device sending the packets)
