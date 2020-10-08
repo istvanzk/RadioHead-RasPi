@@ -1,9 +1,9 @@
 // RH_RF69.h
 // Author: Mike McCauley (mikem@airspayce.com)
 // Copyright (C) 2014 Mike McCauley
+// Adapted for RF69 on Raspeberry PI by Charles-Henri Hallard, 2017; modified by Istvan Z. Kovacs, 2020
 // $Id: RH_RF69.h,v 1.38 2020/04/09 23:40:34 mikem Exp $
 //
-///
 
 
 #ifndef RH_RF69_h
@@ -606,6 +606,23 @@
 /// -"fake ok" state, where initialization passes fluently, but communication doesn't happen
 /// -shields hang Arduino boards, especially during the flashing
 ///
+/// \par Connecting RFM-69 to a Raspberry PI (V2)
+///
+/// There is no dedicated IRQ input on the GPIO. One can use any of the 'free' GPIO pins to detect falling/rising edge signals on it
+/// using the BCM2835 library functions bcm2835_gpio_lev or bcm2835_gpio_set_pud, bcm2835_gpio_sets_eds, bcm2835_gpio_fen, and bcm2835_gpio_eds.
+/// See http://www.airspayce.com/mikem/bcm2835/ for details, and some examples in RadioHead/examples/raspi/rf69_izk or rf69_chh.
+/// To connect a Raspberry Pi (V2) to a RFM69HCW module (https://www.sparkfun.com/products/13910) connect the pins like this:
+///\code
+///           Raspberry PI     RFM69HCW
+///    P1_20,P1_25(GND)----------GND   (ground in)
+///                 VDD----------VCC   (3.3V in)
+///      P1_22 (GPIO25)----------DIO0  (interrupt request out)
+///         P1_24 (CE0)----------NSS   (chip select in)
+///         P1_23 (SCK)----------SCK   (SPI clock in)
+///        P1_19 (MOSI)----------SDI   (SPI Data in)
+///        P1_21 (MISO)----------SDO   (SPI data out)
+/// \endcode
+///
 /// \par Encryption
 ///
 /// This driver support the on-chip AES encryption provided by the RF69.
@@ -634,6 +651,9 @@
 /// SPI based deviced, that you disable interrupts while you transfer data to
 /// and from that other device.  Use cli() to disable interrupts and sei() to
 /// reenable them.
+///
+/// NOTE: Interrupt handling on Raspberry PI is available via the BCM2835 and the RadioHead interrupt handler cannot be used!
+/// The RH_RF69_IRQLESS is used to disable the RadioHead interrupts handling.
 ///
 /// \par Memory
 ///
@@ -923,6 +943,24 @@ public:
     /// \return true if a valid message was copied to buf
     bool        recv(uint8_t* buf, uint8_t* len);
 
+    /// Copy from RHDatagram
+    /// Turns the receiver on if it not already on.
+    /// If there is a valid message available for this node, copy it to buf and return true
+    /// The SRC address is placed in *from if present and not NULL.
+    /// The DEST address is placed in *to if present and not NULL.
+    /// If a message is copied, *len is set to the length.
+    /// You should be sure to call this function frequently enough to not miss any messages
+    /// It is recommended that you call it in your main loop.
+    /// \param[in] buf Location to copy the received message
+    /// \param[in,out] len Pointer to available space in buf. Set to the actual number of octets copied.
+    /// \param[in] from If present and not NULL, the referenced uint8_t will be set to the FROM address
+    /// \param[in] to If present and not NULL, the referenced uint8_t will be set to the TO address
+    /// \param[in] id If present and not NULL, the referenced uint8_t will be set to the ID
+    /// \param[in] flags If present and not NULL, the referenced uint8_t will be set to the FLAGS
+    /// (not just those addressed to this node).
+    /// \return true if a valid message was copied to buf
+    bool        recvfrom(uint8_t* buf, uint8_t* len, uint8_t* from, uint8_t* to, uint8_t* id, uint8_t* flags);
+
     /// Waits until any previous transmit packet is finished being transmitted with waitPacketSent().
     /// Then loads a message into the transmitter and starts the transmitter. Note that a message length
     /// of 0 is NOT permitted. 
@@ -930,6 +968,16 @@ public:
     /// \param[in] len Number of bytes of data to send (> 0)
     /// \return true if the message length was valid and it was correctly queued for transmit
     bool        send(const uint8_t* data, uint8_t len);
+
+    /// Copy from RHDatagram
+    /// Sends a message to the node(s) with the given address
+    /// RH_BROADCAST_ADDRESS is a valid address which will cause the message
+    /// to be accepted by all RHDatagram nodes within range.
+    /// \param[in] buf Pointer to the binary message to send
+    /// \param[in] len Number of octets to send (> 0)
+    /// \param[in] address The address to send the message to.
+    /// \return true if the message not too loing fot eh driver, and the message was transmitted.
+    bool        sendto(uint8_t* buf, uint8_t len, uint8_t address);
 
 	/// Blocks until the current message (if any) 
     /// has been transmitted
@@ -1074,6 +1122,9 @@ protected:
 /// @example rf69_server.pde
 /// @example rf69_reliable_datagram_client.pde
 /// @example rf69_reliable_datagram_server.pde
-
+/// @example raspi/rf69_chh/rf69_client.cpp
+/// @example raspi/rf69_chh/rf69_server.cpp
+/// @example raspi/rf69_izk/rf69_client.cpp
+/// @example raspi/rf69_izk/rf69_server.cpp
 
 #endif

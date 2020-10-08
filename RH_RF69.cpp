@@ -1,6 +1,7 @@
 // RH_RF69.cpp
 //
 // Copyright (C) 2011 Mike McCauley
+// Adapted for RF69 on Raspeberry PI by Charles-Henri Hallard, 2017; modified by Istvan Z. Kovacs, 2020
 // $Id: RH_RF69.cpp,v 1.31 2019/09/02 05:21:52 mikem Exp $
 
 #include <RH_RF69.h>
@@ -509,19 +510,19 @@ bool RH_RF69::available()
 
     if (_mode == RHModeRx && (irqflags2 & RH_RF69_IRQFLAGS2_PAYLOADREADY))
     {
-    // A complete message has been received with good CRC
-    _lastRssi = -((int8_t)(spiRead(RH_RF69_REG_24_RSSIVALUE) >> 1));
-    _lastPreambleTime = millis();
+        // A complete message has been received with good CRC
+        _lastRssi = -((int8_t)(spiRead(RH_RF69_REG_24_RSSIVALUE) >> 1));
+        _lastPreambleTime = millis();
 
-    setModeIdle();
+        setModeIdle();
 
-    // Save it in our buffer
-    readFifo();
+        // Save it in our buffer
+        readFifo();
     }
 #endif // defined RH_RF69_IRQLESS
 
     if (_mode == RHModeTx)
-	return false;
+	    return false;
     setModeRx(); // Make sure we are receiving
     return _rxBufValid;
 }
@@ -540,9 +541,25 @@ bool RH_RF69::recv(uint8_t* buf, uint8_t* len)
 	ATOMIC_BLOCK_END;
     }
     _rxBufValid = false; // Got the most recent message
+    setModeRx(); //[IZK]
+
 //    printBuffer("recv:", buf, *len);
     return true;
 }
+
+bool RH_RF69::recvfrom(uint8_t* buf, uint8_t* len, uint8_t* from, uint8_t* to, uint8_t* id, uint8_t* flags)
+{
+    if (recv(buf, len))
+    {
+        if (from)  *from =  headerFrom();
+        if (to)    *to =    headerTo();
+        if (id)    *id =    headerId();
+        if (flags) *flags = headerFlags();
+        return true;
+    }
+    return false;
+}
+
 
 bool RH_RF69::send(const uint8_t* data, uint8_t len)
 {
@@ -574,6 +591,12 @@ bool RH_RF69::send(const uint8_t* data, uint8_t len)
     return true;
 }
 
+bool RH_RF69::sendto(uint8_t* buf, uint8_t len, uint8_t address)
+{
+    setHeaderTo(address);
+    return send(buf, len);
+}
+
 #ifdef RH_RF69_IRQLESS
 // Since we have no interrupts, we need to implement our own 
 // waitPacketSent for the driver by reading RF69 internal register
@@ -583,8 +606,15 @@ bool RH_RF69::waitPacketSent()
     if (_mode != RHModeTx)
     return false;
 
+    // Use a timout for transmission [IZK]
+    unsigned long starttime = millis();
     while (!(spiRead(RH_RF69_REG_28_IRQFLAGS2) & RH_RF69_IRQFLAGS2_PACKETSENT)){
-      YIELD;
+        if ((millis() - starttime) > 100)
+        {
+            ret=false;
+            break;
+        }          
+        YIELD;
     }
 
     // A transmitter message has been fully sent
