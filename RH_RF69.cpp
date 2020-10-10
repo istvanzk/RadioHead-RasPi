@@ -604,7 +604,7 @@ bool RH_RF69::waitPacketSent()
 {
     // If we are not currently in transmit mode, there is no packet to wait for
     if (_mode != RHModeTx)
-    return false;
+        return false;
 
     // Use a timout for transmission [IZK]
     unsigned long starttime = millis();
@@ -616,11 +616,12 @@ bool RH_RF69::waitPacketSent()
         }          
         YIELD;
     }
-
     // A transmitter message has been fully sent
+    if (ret)
+        _txGood++;
+
     setModeIdle(); // Clears FIFO
-    _txGood++;
-    return true;
+    return ret;
 }
 #endif // defined RH_RF69_IRQLESS
 
