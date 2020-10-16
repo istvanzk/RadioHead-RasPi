@@ -602,6 +602,8 @@ bool RH_RF69::sendto(uint8_t* buf, uint8_t len, uint8_t address)
 // waitPacketSent for the driver by reading RF69 internal register
 bool RH_RF69::waitPacketSent()
 {
+    bool ret = true;
+    
     // If we are not currently in transmit mode, there is no packet to wait for
     if (_mode != RHModeTx)
         return false;
