@@ -510,6 +510,8 @@ bool RH_RF69::available()
     // As we have not enabled IRQ, ne need to check internal IRQ register of device
     uint8_t irqflags2 = spiRead(RH_RF69_REG_28_IRQFLAGS2);
 
+    // Must look for PAYLOADREADY, not CRCOK, since only PAYLOADREADY occurs _after_ AES decryption
+    // has been done
     if (_mode == RHModeRx && (irqflags2 & RH_RF69_IRQFLAGS2_PAYLOADREADY))
     {
         // A complete message has been received with good CRC
@@ -521,7 +523,7 @@ bool RH_RF69::available()
         // Save it in our buffer
         readFifo();
     }
-#endif // defined RH_RF69_IRQLESS
+#endif
 
     if (_mode == RHModeTx)
 	    return false;
@@ -627,7 +629,7 @@ bool RH_RF69::waitPacketSent()
     setModeIdle(); // Clears FIFO
     return ret;
 }
-#endif // defined RH_RF69_IRQLESS
+#endif
 
 uint8_t RH_RF69::maxMessageLength()
 {
