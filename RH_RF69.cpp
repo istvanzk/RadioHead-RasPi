@@ -118,9 +118,7 @@ bool RH_RF69::init()
 #ifdef RH_ATTACHINTERRUPT_TAKES_PIN_NUMBER
     interruptNumber = _interruptPin;
 #endif
-#endif
 
-#ifndef RH_RF69_IRQLESS
     // Tell the low level SPI interface we will use SPI within this interrupt
     spiUsingInterrupt(interruptNumber);
 #endif
@@ -130,7 +128,7 @@ bool RH_RF69::init()
     // My test devices return 0x24
     _deviceType = spiRead(RH_RF69_REG_10_VERSION);
     if (_deviceType == 00 || _deviceType == 0xff){
-        printf("RH_RF69::_deviceType failed\n");
+        printf("RH_RF69::_deviceType failed (0x%02X)\n", _deviceType);
 	    return false;
     } else
         printf("RH_RF69::_deviceType: 0x%02X\n", _deviceType);
@@ -212,7 +210,7 @@ bool RH_RF69::init()
 }
 
 // C++ level interrupt handler for this instance
-// RH_RF69 is unusual in Mthat it has several interrupt lines, and not a single, combined one.
+// RH_RF69 is unusual in that it has several interrupt lines, and not a single, combined one.
 // On Moteino, only one of the several interrupt lines (DI0) from the RH_RF69 is connnected to the processor.
 // We use this to get PACKETSDENT and PAYLOADRADY interrupts.
 #ifndef RH_RF69_IRQLESS
