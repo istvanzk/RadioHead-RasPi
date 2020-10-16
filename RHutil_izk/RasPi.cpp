@@ -20,7 +20,7 @@ timeval RHStartTime;
 void SPIClass::begin()
 {
   //Set SPI Defaults
-  uint16_t divider = BCM2835_SPI_CLOCK_DIVIDER_256;
+  uint16_t divider = BCM2835_SPI_CLOCK_DIVIDER_1024;
   uint8_t bitorder = BCM2835_SPI_BIT_ORDER_MSBFIRST;
   uint8_t datamode = BCM2835_SPI_MODE0;
 
