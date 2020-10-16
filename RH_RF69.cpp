@@ -105,9 +105,11 @@ void RH_RF69::setIdleMode(uint8_t idleMode)
 
 bool RH_RF69::init()
 {
-    if (!RHSPIDriver::init())
-	return false;
-	
+    if (!RHSPIDriver::init()){
+        printf("RH_RF69::RHSPIDriver::init() failed\n");
+	    return false;
+    }
+
 #ifndef RH_RF69_IRQLESS    
     // Determine the interrupt number that corresponds to the interruptPin
     int interruptNumber = digitalPinToInterrupt(_interruptPin);
@@ -127,10 +129,12 @@ bool RH_RF69::init()
     // This also tests whether we are really connected to a device
     // My test devices return 0x24
     _deviceType = spiRead(RH_RF69_REG_10_VERSION);
-    if (_deviceType == 00 ||
-	_deviceType == 0xff)
-	return false;
-
+    if (_deviceType == 00 || _deviceType == 0xff){
+        printf("RH_RF69::_deviceType failed\n");
+	    return false;
+    } else
+        printf("RH_RF69::_deviceType: 0x%02X\n", _deviceType);
+        
 #ifndef RH_RF69_IRQLESS
 
     // Add by Adrien van den Bossche <vandenbo@univ-tlse2.fr> for Teensy
@@ -603,7 +607,7 @@ bool RH_RF69::sendto(uint8_t* buf, uint8_t len, uint8_t address)
 bool RH_RF69::waitPacketSent()
 {
     bool ret = true;
-    
+
     // If we are not currently in transmit mode, there is no packet to wait for
     if (_mode != RHModeTx)
         return false;
