@@ -127,6 +127,7 @@ bool RH_RF69::init()
     // This also tests whether we are really connected to a device
     // My test devices return 0x24
     _deviceType = spiRead(RH_RF69_REG_10_VERSION);
+    delay(100);
     if (_deviceType == 00 || _deviceType == 0xff){
         printf("RH_RF69::_deviceType failed (0x%02X)\n", _deviceType);
 	    return false;
