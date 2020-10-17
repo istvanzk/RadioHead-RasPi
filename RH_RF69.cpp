@@ -537,9 +537,9 @@ bool RH_RF69::available()
     }
 
     if (!_rxBufValid)
-        printf(" - RXBUF NOT VALID (irqflags2 = %0x0X)- \n", irqflags2);
+        printf(" - RXBUF NOT VALID (irqflags2: 0x%02X) - \n", irqflags2);
     else
-        printf(" - RXBUF VALID (%d)- \n", _rxGood);
+        printf(" - RXBUF VALID (%d) - \n", _rxGood);
 #endif
 
     setModeRx(); // Make sure we are receiving
