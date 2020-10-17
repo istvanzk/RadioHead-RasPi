@@ -535,7 +535,7 @@ bool RH_RF69::available()
 bool RH_RF69::recv(uint8_t* buf, uint8_t* len)
 {
     if (!available())
-	return false;
+	    return false;
 
     if (buf && len)
     {
