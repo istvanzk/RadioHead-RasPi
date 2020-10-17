@@ -193,7 +193,7 @@ bool RH_RF69::init()
 
     // Behavior of the packet handler when CRC check fails:
     // Do not clear FIFO. PayloadReady interrupt issued.
-    spiWrite(RH_RF69_REG_37_PACKETCONFIG1, RH_RF69_PACKETCONFIG1_CRCAUTOCLEAROFF);
+    //spiWrite(RH_RF69_REG_37_PACKETCONFIG1, RH_RF69_PACKETCONFIG1_CRCAUTOCLEAROFF);
 
     // The following can be changed later by the user if necessary.
     // Set up default configuration
