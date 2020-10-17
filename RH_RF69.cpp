@@ -249,6 +249,7 @@ void RH_RF69::handleInterrupt()
 void RH_RF69::readFifo()
 {
     ATOMIC_BLOCK_START;
+    _rxBufValid = false;
     digitalWrite(_slaveSelectPin, LOW);
     _spi.beginTransaction();
     _spi.transfer(RH_RF69_REG_00_FIFO); // Send the start address with the write mask off
@@ -256,27 +257,33 @@ void RH_RF69::readFifo()
     if (payloadlen <= RH_RF69_MAX_ENCRYPTABLE_PAYLOAD_LEN &&
 	payloadlen >= RH_RF69_HEADER_LEN)
     {
-	_rxHeaderTo = _spi.transfer(0);
-	// Check addressing
-	if (_promiscuous ||
-	    _rxHeaderTo == _thisAddress ||
-	    _rxHeaderTo == RH_BROADCAST_ADDRESS)
-	{
-	    // Get the rest of the headers
-	    _rxHeaderFrom  = _spi.transfer(0);
-	    _rxHeaderId    = _spi.transfer(0);
-	    _rxHeaderFlags = _spi.transfer(0);
-	    // And now the real payload
-	    for (_bufLen = 0; _bufLen < (payloadlen - RH_RF69_HEADER_LEN); _bufLen++)
-		_buf[_bufLen] = _spi.transfer(0);
-	    _rxGood++;
-	    _rxBufValid = true;
-	}
+        _rxHeaderTo = _spi.transfer(0);
+        _rxHeaderFrom  = _spi.transfer(0);
+        // Check addressing
+        if (_promiscuous ||
+            _rxHeaderTo == _thisAddress ||
+            _rxHeaderTo == RH_BROADCAST_ADDRESS)
+        {
+            // Get the rest of the headers
+            //_rxHeaderFrom  = _spi.transfer(0);
+            _rxHeaderId    = _spi.transfer(0);
+            _rxHeaderFlags = _spi.transfer(0);
+            // And now the real payload
+            for (_bufLen = 0; _bufLen < (payloadlen - RH_RF69_HEADER_LEN); _bufLen++)
+                _buf[_bufLen] = _spi.transfer(0);
+            _rxGood++;
+            _rxBufValid = true;
+        }
     }
     digitalWrite(_slaveSelectPin, HIGH);
     _spi.endTransaction();
     ATOMIC_BLOCK_END;
     // Any junk remaining in the FIFO will be cleared next time we go to receive mode.
+
+    if (_rxBufValid)
+        printf(" - RXBUF VALID 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
+    else
+        printf(" - RXBUF IGNOR 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
 }
 
 // These are low level functions that call the interrupt handler for the correct
@@ -538,7 +545,7 @@ bool RH_RF69::available()
         YIELD; // Wait for any previous transmit to finish
     }
     else
-        printf(" - RXBUF VALID - \n");
+        printf(" - RXBUF VALID (%d)- \n", _rxGood);
 
     //setModeRx(); // Make sure we are receiving
     return _rxBufValid;
