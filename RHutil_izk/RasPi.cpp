@@ -29,8 +29,6 @@ void SPIClass::begin()
 
 void SPIClass::begin(uint16_t divider, uint8_t bitOrder, uint8_t dataMode)
 {
-  bcm2835_spi_begin();
-
   setClockDivider(divider);
   setBitOrder(bitOrder);
   setDataMode(dataMode);
@@ -38,6 +36,8 @@ void SPIClass::begin(uint16_t divider, uint8_t bitOrder, uint8_t dataMode)
   //Set CS pins polarity to low
   bcm2835_spi_setChipSelectPolarity(BCM2835_SPI_CS0, 0);
   //bcm2835_spi_chipSelect(BCM2835_SPI_CS_NONE);
+
+  bcm2835_spi_begin();
 
   //Initialize a timestamp for millis calculation
   gettimeofday(&RHStartTime, NULL);
