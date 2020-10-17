@@ -70,7 +70,7 @@ void SPIClass::setClockDivider(uint16_t rate)
 uint8_t SPIClass::transfer(uint8_t _data)
 {
   //Set which CS pin to use for next transfers
-  //bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
+  bcm2835_spi_chipSelect(BCM2835_SPI_CS0);
   //Transfer 1 byte
   uint8_t data;
   data = bcm2835_spi_transfer((uint8_t)_data);
