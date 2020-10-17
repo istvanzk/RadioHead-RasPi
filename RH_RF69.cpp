@@ -248,8 +248,9 @@ void RH_RF69::handleInterrupt()
 // Performance issue?
 void RH_RF69::readFifo()
 {
-    ATOMIC_BLOCK_START;
     _rxBufValid = false;
+
+    ATOMIC_BLOCK_START;
     digitalWrite(_slaveSelectPin, LOW);
     _spi.beginTransaction();
     _spi.transfer(RH_RF69_REG_00_FIFO); // Send the start address with the write mask off
@@ -539,8 +540,8 @@ bool RH_RF69::available()
     if (!_rxBufValid)
     {
         printf(" - RXBUF NOT VALID - \n");
-        if (_mode == RHModeTx)
-            return false;
+        //if (_mode == RHModeTx)
+        //    return false;
         setModeRx(); // Make sure we are receiving
         YIELD; // Wait for any previous transmit to finish
     }
