@@ -191,6 +191,10 @@ bool RH_RF69::init()
     spiWrite(RH_RF69_REG_5A_TESTPA1, RH_RF69_TESTPA1_NORMAL);
     spiWrite(RH_RF69_REG_5C_TESTPA2, RH_RF69_TESTPA2_NORMAL);
 
+    // Behavior of the packet handler when CRC check fails:
+    // Do not clear FIFO. PayloadReady interrupt issued.
+    spiWrite(RH_RF69_REG_37_PACKETCONFIG1, RH_RF69_PACKETCONFIG1_CRCAUTOCLEAROFF);
+
     // The following can be changed later by the user if necessary.
     // Set up default configuration
     uint8_t syncwords[] = { 0x2d, 0xd4 };
