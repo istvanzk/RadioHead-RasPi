@@ -284,11 +284,12 @@ void RH_RF69::readFifo()
     _spi.endTransaction();
     ATOMIC_BLOCK_END;
     // Any junk remaining in the FIFO will be cleared next time we go to receive mode.
-
+/*
     if (_rxBufValid)
         printf(" - RXBUF VALID 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
     else
         printf(" - RXBUF IGNOR 0x%02X => 0x%02X - ", _rxHeaderFrom, _rxHeaderTo);
+*/        
 }
 
 // These are low level functions that call the interrupt handler for the correct
@@ -539,11 +540,12 @@ bool RH_RF69::available()
         // Save it in our buffer
         readFifo();
     }
-
+/*
     if (!_rxBufValid)
         printf(" - RXBUF NOT VALID (irqflags2: 0x%02X) - \n", irqflags2);
     else
         printf(" - RXBUF VALID (%d) - \n", _rxGood);
+*/        
 #endif
 
     setModeRx(); // Make sure we are receiving
