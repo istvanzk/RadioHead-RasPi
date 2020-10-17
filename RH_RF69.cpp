@@ -508,6 +508,9 @@ void RH_RF69::setEncryptionKey(uint8_t* key)
 bool RH_RF69::available()
 {
 #ifdef RH_RF69_IRQLESS
+    if (_mode == RHModeTx)
+	    return false;
+
     // As we have not enabled IRQ, ne need to check internal IRQ register of device
     uint8_t irqflags2 = spiRead(RH_RF69_REG_28_IRQFLAGS2);
 
@@ -526,9 +529,18 @@ bool RH_RF69::available()
     }
 #endif
 
-    if (_mode == RHModeTx)
-	    return false;
-    setModeRx(); // Make sure we are receiving
+    if (!_rxBufValid)
+    {
+        printf(" - RXBUF NOT VALID - \n");
+        if (_mode == RHModeTx)
+            return false;
+        setModeRx(); // Make sure we are receiving
+        YIELD; // Wait for any previous transmit to finish
+    }
+    else
+        printf(" - RXBUF VALID - \n");
+
+    //setModeRx(); // Make sure we are receiving
     return _rxBufValid;
 }
 
