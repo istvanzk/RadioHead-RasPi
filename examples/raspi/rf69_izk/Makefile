@@ -1,10 +1,10 @@
 # Makefile
-# Sample for RH_RF69 (client and server) on Raspberry Pi
+# Sample for RH_RF69HCW (client and server) on Raspberry Pi
 # Caution: requires bcm2835 library to be already installed
 # http://www.airspayce.com/mikem/bcm2835/
 
 CC            = g++
-CFLAGS        = -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"$*\"
+CFLAGS        = -DRASPBERRY_PI -DBCM2835_NO_DELAY_COMPATIBILITY -D__BASEFILE__=\"$*\" -DRFM69_HW
 LIBS          = -lbcm2835 -lrt
 RADIOHEADBASE = ../../..
 INCLUDE       = -I$(RADIOHEADBASE)
