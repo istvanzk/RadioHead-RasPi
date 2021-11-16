@@ -1488,9 +1488,9 @@ these examples and explanations and extend them to suit your needs.
  #define RH_HAVE_HARDWARE_SPI
  #define RH_HAVE_SERIAL
  #define PROGMEM
- #if (__has_include (<pigpio.h>))
-  #include <RHutil_pigpio/RasPi.h>
- #elif (__has_include (<bcm2835.h>))
+ //#if __has_include (<pigpio.h>)
+ // #include <RHutil_pigpio/RasPi.h>
+ #if __has_include (<bcm2835.h>)
   #include <RHutil_izk/RasPi.h> 
  #else
   #include <RHutil/RasPi.h>
